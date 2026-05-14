@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "split": "search",
+  "tasks": [
+    {
+      "id": "execution_contract_merge",
+      "pass": true,
+      "score": 10,
+      "notes": "merge requiredOutputs"
+    },
+    {
+      "id": "tool_filter_smoke",
+      "pass": true,
+      "score": 10,
+      "notes": "allowlist size 2",
+      "contextKTokens": 0.02,
+      "latencyMs": 1
+    }
+  ],
+  "aggregates": {
+    "passRate": 1,
+    "meanScore": 10,
+    "meanContextKTokens": 0.02,
+    "meanLatencyMs": 1
+  },
+  "candidateId": "cli-smoke-test",
+  "evaluatedAt": 1776356799358
+}

@@ -1,0 +1,50 @@
+.venv/
+node_modules/
+dist/
+build/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+coverage/
+.turbo/
+.cache/
+.idea/
+.vscode/
+# Rust / Cargo — build cache only (safe to delete; ~GBs after local builds). Recreated on `cargo build` / `tauri dev`.
+# Workspace may use the root `target/`; nested dirs appear if a crate was built from its own folder.
+/target/
+src-tauri/target/
+agent-canvas-server/target/
+# Nested git clone (skinnytools); use submodule or install separately if needed
+vendor/
+
+# Local dev telemetry SQLite (companion server)
+.agent-canvas/dev-telemetry.sqlite
+.agent-canvas/dev-telemetry.sqlite-*
+**/.agent-canvas/dev-telemetry.sqlite*
+
+# Tauri workspace-local persisted UI state (not portable)
+src-tauri/.agent-canvas/
+
+# NYC/c8 raw coverage output (regenerated on test runs)
+**/.nyc_output/
+
+# Backup / merge artifacts
+*.bak
+*.bak2
+*.orig
+*.rej
+
+# Python (reserved for optional tooling)
+__pycache__/
+*.pyc
+
+# Docker
+.docker/
+
+# Orca runtime data (workspace-specific, not portable)
+Orca/
+brain/
+chat/

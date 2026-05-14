@@ -1,0 +1,179 @@
+{
+  "intent": {
+    "query": "Upload these files to Google Drive and delete local originals after verification.",
+    "catalogId": "hermes-any-app-workflows",
+    "matchedWorkflows": [
+      {
+        "id": "drive-upload-then-clean-local",
+        "title": "Upload and then clean local files",
+        "pack": "drive-ingest",
+        "risk": "destructive",
+        "score": 12.8,
+        "commands": [
+          "gdrive.batch.upload",
+          "gdrive.verify.uploads",
+          "local.delete_batch"
+        ],
+        "requiredSlots": [
+          "source_folder",
+          "destination_folder"
+        ],
+        "optionalSlots": [
+          "cleanup_policy"
+        ],
+        "approvalRequired": true,
+        "target": {
+          "type": "hybrid",
+          "app": "google_drive_local",
+          "domain": "drive.google.com"
+        }
+      },
+      {
+        "id": "drive-upload-active-folder",
+        "title": "Upload active folder to Google Drive",
+        "pack": "drive-ingest",
+        "risk": "mutating",
+        "score": 7.95,
+        "commands": [
+          "local.folder.list",
+          "gdrive.folder.ensure",
+          "gdrive.batch.upload"
+        ],
+        "requiredSlots": [
+          "source_folder",
+          "destination_folder"
+        ],
+        "optionalSlots": [],
+        "approvalRequired": false,
+        "target": {
+          "type": "official_api",
+          "app": "google_drive",
+          "domain": "drive.google.com"
+        }
+      },
+      {
+        "id": "local-rename-normalize-upload",
+        "title": "Bulk rename and normalize before upload",
+        "pack": "file-normalizer",
+        "risk": "mutating",
+        "score": 4.15,
+        "commands": [
+          "local.file.rename.batch",
+          "gdrive.batch.upload"
+        ],
+        "requiredSlots": [
+          "source_folder",
+          "rename_pattern",
+          "destination_folder"
+        ],
+        "optionalSlots": [],
+        "approvalRequired": false,
+        "target": {
+          "type": "hybrid",
+          "app": "local_drive",
+          "domain": "drive.google.com"
+        }
+      }
+    ],
+    "combinedCommands": [
+      "gdrive.batch.upload",
+      "gdrive.verify.uploads",
+      "local.delete_batch",
+      "local.folder.list",
+      "gdrive.folder.ensure",
+      "local.file.rename.batch"
+    ],
+    "authLanePlan": {
+      "requiredLanes": [
+        "oauth"
+      ],
+      "oauthHealthChecks": [
+        "token_valid",
+        "scope_sufficient",
+        "api_reachable"
+      ],
+      "browserSessionHealthChecks": [
+        "domain_binding_valid",
+        "bundle_decryptable",
+        "auth_active",
+        "ttl_valid"
+      ],
+      "fallbackBounded": true,
+      "perWorkflow": [
+        {
+          "workflowId": "drive-upload-then-clean-local",
+          "pack": "drive-ingest",
+          "risk": "destructive",
+          "approvalRequired": true,
+          "commandRoutes": [
+            {
+              "command": "gdrive.batch.upload",
+              "lane": "oauth",
+              "laneReason": "auth_profile:drive-oauth;match:pack",
+              "authProfileId": "drive-oauth"
+            },
+            {
+              "command": "gdrive.verify.uploads",
+              "lane": "oauth",
+              "laneReason": "auth_profile:drive-oauth;match:pack",
+              "authProfileId": "drive-oauth"
+            },
+            {
+              "command": "local.delete_batch",
+              "lane": "oauth",
+              "laneReason": "auth_profile:drive-oauth;match:pack",
+              "authProfileId": "drive-oauth"
+            }
+          ]
+        },
+        {
+          "workflowId": "drive-upload-active-folder",
+          "pack": "drive-ingest",
+          "risk": "mutating",
+          "approvalRequired": false,
+          "commandRoutes": [
+            {
+              "command": "local.folder.list",
+              "lane": "oauth",
+              "laneReason": "auth_profile:drive-oauth;match:pack",
+              "authProfileId": "drive-oauth"
+            },
+            {
+              "command": "gdrive.folder.ensure",
+              "lane": "oauth",
+              "laneReason": "auth_profile:drive-oauth;match:pack",
+              "authProfileId": "drive-oauth"
+            },
+            {
+              "command": "gdrive.batch.upload",
+              "lane": "oauth",
+              "laneReason": "auth_profile:drive-oauth;match:pack",
+              "authProfileId": "drive-oauth"
+            }
+          ]
+        },
+        {
+          "workflowId": "local-rename-normalize-upload",
+          "pack": "file-normalizer",
+          "risk": "mutating",
+          "approvalRequired": false,
+          "commandRoutes": [
+            {
+              "command": "local.file.rename.batch",
+              "lane": "per_step",
+              "laneReason": "target_type:hybrid",
+              "authProfileId": null
+            },
+            {
+              "command": "gdrive.batch.upload",
+              "lane": "oauth",
+              "laneReason": "command_prefix:gdrive",
+              "authProfileId": null
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": "Workflow catalog matches (hermes-any-app-workflows)\n1. Upload and then clean local files [drive-ingest] risk=destructive score=12.8\n   commands: gdrive.batch.upload -> gdrive.verify.uploads -> local.delete_batch\n   required slots: source_folder, destination_folder; optional slots: cleanup_policy; approval: required\n   auth lanes: gdrive.batch.upload:oauth (auth_profile:drive-oauth;match:pack profile=drive-oauth), gdrive.verify.uploads:oauth (auth_profile:drive-oauth;match:pack profile=drive-oauth), local.delete_batch:oauth (auth_profile:drive-oauth;match:pack profile=drive-oauth)\n2. Upload active folder to Google Drive [drive-ingest] risk=mutating score=7.95\n   commands: local.folder.list -> gdrive.folder.ensure -> gdrive.batch.upload\n   required slots: source_folder, destination_folder; optional slots: none; approval: standard mutating policy\n   auth lanes: local.folder.list:oauth (auth_profile:drive-oauth;match:pack profile=drive-oauth), gdrive.folder.ensure:oauth (auth_profile:drive-oauth;match:pack profile=drive-oauth), gdrive.batch.upload:oauth (auth_profile:drive-oauth;match:pack profile=drive-oauth)\n3. Bulk rename and normalize before upload [file-normalizer] risk=mutating score=4.15\n   commands: local.file.rename.batch -> gdrive.batch.upload\n   required slots: source_folder, rename_pattern, destination_folder; optional slots: none; approval: standard mutating policy\n   auth lanes: local.file.rename.batch:per_step (target_type:hybrid), gdrive.batch.upload:oauth (command_prefix:gdrive)\nAuth lanes required: oauth\nOAuth preflight: token_valid, scope_sufficient, api_reachable\nBrowser-session preflight: domain_binding_valid, bundle_decryptable, auth_active, ttl_valid\nHybrid fallback bounded: yes"
+}

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orca Coder — Swiss Modern</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Nunito:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Viewport-safe base (frontend-slides): no inner scroll on slides */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { overflow: hidden; background: #fafafa; color: #111; }
+    :root {
+      --swiss-red: #e11d2e;
+      --title: clamp(1.35rem, 4vw, 2.75rem);
+      --h2: clamp(1.1rem, 2.8vw, 1.85rem);
+      --body: clamp(0.8rem, 1.35vw, 1.05rem);
+      --small: clamp(0.68rem, 1.1vw, 0.82rem);
+      --pad: clamp(1rem, 4vw, 3.5rem);
+      --gap: clamp(0.6rem, 2vw, 1.25rem);
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      z-index: 100;
+      padding: 0.5rem 1rem;
+      background: var(--swiss-red);
+      color: #fff;
+      font-family: Nunito, sans-serif;
+    }
+    .skip-link:focus { left: var(--pad); top: var(--pad); }
+
+    .deck {
+      height: 100vh;
+      height: 100dvh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .deck { scroll-behavior: auto; }
+    }
+
+    .slide {
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: #fafafa;
+    }
+    .slide::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: clamp(4px, 0.8vw, 6px);
+      background: var(--swiss-red);
+      z-index: 2;
+    }
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.06) 1px, transparent 1px);
+      background-size: calc(100% / 12) 100%, 100% 64px;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .slide-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--pad);
+      padding-top: calc(var(--pad) + 4px);
+      max-height: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr min(38%, 300px);
+      gap: clamp(1rem, 3vw, 2.5rem);
+      align-items: center;
+      min-height: 0;
+    }
+    @media (max-width: 720px) {
+      .split { grid-template-columns: 1fr; }
+    }
+
+    .label {
+      font-family: Archivo, sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.62rem, 1vw, 0.75rem);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--swiss-red);
+      margin: 0 0 var(--gap);
+    }
+    h1 {
+      font-family: Archivo, sans-serif;
+      font-weight: 700;
+      font-size: var(--title);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin: 0 0 var(--gap);
+    }
+    h2 {
+      font-family: Archivo, sans-serif;
+      font-weight: 700;
+      font-size: var(--h2);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin: 0 0 var(--gap);
+    }
+    p, li {
+      font-family: Nunito, sans-serif;
+      font-size: var(--body);
+      line-height: 1.55;
+      color: #333;
+      margin: 0;
+      max-width: 40em;
+    }
+    ul {
+      margin: 0;
+      padding-left: 1.15em;
+    }
+    li + li { margin-top: 0.45em; }
+
+    .aside {
+      border-left: 3px solid #111;
+      padding-left: clamp(0.75rem, 2vw, 1.25rem);
+      font-family: Nunito, sans-serif;
+      font-size: var(--small);
+      line-height: 1.5;
+      color: #444;
+    }
+    .aside strong {
+      display: block;
+      font-family: Archivo, sans-serif;
+      font-size: 0.9em;
+      color: #111;
+      margin-bottom: 0.45em;
+    }
+    @media (max-width: 720px) {
+      .aside {
+        border-left: none;
+        border-top: 3px solid #111;
+        padding-left: 0;
+        padding-top: 1rem;
+      }
+    }
+
+    /* Feature grid — max 6 */
+    .grid-6 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(0.5rem, 1.5vw, 0.85rem);
+      margin-top: var(--gap);
+      max-width: min(100%, 720px);
+    }
+    @media (max-width: 600px) {
+      .grid-6 { grid-template-columns: 1fr 1fr; }
+    }
+    .card {
+      border: 1px solid rgba(0,0,0,0.1);
+      padding: clamp(0.5rem, 1.2vw, 0.75rem);
+      background: rgba(255,255,255,0.7);
+      font-family: Nunito, sans-serif;
+      font-size: clamp(0.68rem, 1.15vw, 0.8rem);
+      line-height: 1.4;
+      color: #222;
+    }
+    .card b {
+      font-family: Archivo, sans-serif;
+      display: block;
+      font-size: 0.95em;
+      margin-bottom: 0.25em;
+      color: #111;
+    }
+
+    /* Reveal on enter */
+    .reveal {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .slide.is-visible .reveal {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    }
+
+    /* Progress bar */
+    nav[aria-label="Slide"] {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: clamp(0.4rem, 1.5vw, 0.65rem) var(--pad);
+      background: rgba(250,250,250,0.92);
+      border-top: 1px solid rgba(0,0,0,0.08);
+      font-family: Nunito, sans-serif;
+      font-size: var(--small);
+      color: #555;
+    }
+    .progress-track {
+      flex: 1;
+      height: 3px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      max-width: 200px;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--swiss-red);
+      transition: width 0.25s ease;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .progress-fill { transition: none; }
+    }
+    .hint { opacity: 0.75; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#slide-1">Skip to first slide</a>
+
+  <div class="deck" id="deck" role="document" tabindex="0" aria-label="Presentation slides">
+    <main id="main">
+      <section class="slide" id="slide-1" aria-labelledby="t1">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="slide-inner">
+          <div class="split">
+            <div class="reveal">
+              <p class="label" id="t1">Orca Coder</p>
+              <h1>Infinite canvas IDE for multi-agent coding</h1>
+              <p>Pan, zoom, and arrange agents, terminals, editors, and previews on one surface — with an orchestrator that drives tools against your repo.</p>
+            </div>
+            <aside class="aside reveal">
+              <strong>Swiss Modern</strong>
+              Editorial grid · red rule · Archivo + Nunito
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-2" aria-labelledby="t2">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="slide-inner">
+          <p class="label" id="t2">Positioning</p>
+          <h2 class="reveal">One workspace, many agents</h2>
+          <p class="reveal" style="margin-top: var(--gap)">Run Claude, Codex, Gemini, and your own flows in parallel without losing context — tiles keep outputs and files visually separated.</p>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-3" aria-labelledby="t3">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="slide-inner">
+          <div class="split">
+            <div>
+              <p class="label" id="t3">Canvas</p>
+              <h2 class="reveal">Tiles, not tabs</h2>
+              <ul class="reveal" style="margin-top: var(--gap)">
+                <li>Infinite pan and zoom; focus mode for deep work</li>
+                <li>Z-order, resize presets, and mission-control style overview</li>
+                <li>Orchestrator reveals the active module as tools run</li>
+              </ul>
+            </div>
+            <aside class="aside reveal">
+              <strong>Model</strong>
+              Each tile has id, title, position, size, and meta — the orchestrator lists and updates them safely.
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-4" aria-labelledby="t4">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="slide-inner">
+          <p class="label" id="t4">Modules</p>
+          <h2 class="reveal">Six core tile types</h2>
+          <div class="grid-6 reveal">
+            <div class="card"><b>Agent</b> Live model output</div>
+            <div class="card"><b>Terminal</b> PTY + xterm.js</div>
+            <div class="card"><b>Editor</b> Monaco</div>
+            <div class="card"><b>Browser</b> Local / web preview</div>
+            <div class="card"><b>Diff</b> Writes &amp; review</div>
+            <div class="card"><b>Todo</b> Tasks &amp; handoff</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-5" aria-labelledby="t5">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="slide-inner">
+          <div class="split">
+            <div>
+              <p class="label" id="t5">Orchestrator</p>
+              <h2 class="reveal">Tool loop on your repo</h2>
+              <ul class="reveal" style="margin-top: var(--gap)">
+                <li>Read / write files, list directories, workspace switch</li>
+                <li>Create and update canvas modules from chat</li>
+                <li>Parallel tool batches when paths don’t conflict</li>
+              </ul>
+            </div>
+            <aside class="aside reveal">
+              <strong>Quality</strong>
+              Large tool results can be compressed before they hit the model — less context blow-up on long sessions.
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-6" aria-labelledby="t6">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="slide-inner">
+          <p class="label" id="t6">Integrations</p>
+          <h2 class="reveal">Bring your own agent</h2>
+          <p class="reveal" style="margin-top: var(--gap)">External runners (Hermes, Pi, OpenClaude-style adapters) can call the same tool contract over HTTP/WebSocket — the canvas executes tools while your UI stays in sync. GitHub research can use a dedicated <strong>GitHub (gh)</strong> module instead of fragile iframes.</p>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-7" aria-labelledby="t7">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="slide-inner">
+          <div class="split">
+            <div>
+              <p class="label" id="t7">Stack</p>
+              <h2 class="reveal">Implementation</h2>
+              <ul class="reveal" style="margin-top: var(--gap)">
+                <li>React 18, TypeScript, Vite, Tailwind, Zustand</li>
+                <li>Companion server: Node, Express, WebSocket</li>
+                <li>Desktop: Tauri + native shell where needed</li>
+              </ul>
+            </div>
+            <aside class="aside reveal">
+              <strong>Dev</strong>
+              <code style="font-size: 0.9em">npm install && npm run dev</code>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-8" aria-labelledby="t8">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="slide-inner">
+          <p class="label" id="t8">Workflow</p>
+          <h2 class="reveal">Keyboard-first</h2>
+          <ul class="reveal" style="margin-top: var(--gap)">
+            <li>⌘1–⌘6 — add Agent, Terminal, Browser, Todo, Editor, Diff</li>
+            <li>⌘Enter — focus mode · Esc — exit · ⌘0 — reset view</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-9" aria-labelledby="t9">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="slide-inner">
+          <p class="label" id="t9">Orca Coder</p>
+          <h1 class="reveal" style="font-size: clamp(1.5rem, 3.5vw, 2.5rem)">Ship faster with a visible multi-agent desk</h1>
+          <p class="reveal" style="margin-top: var(--gap)">MIT License · customize theme via CSS variables: <code>--swiss-red</code>, fonts, grid opacity.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav aria-label="Slide">
+    <span id="slide-index" aria-live="polite">1 / 9</span>
+    <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+    <span class="hint">← → Space · PgUp/PgDn · Home/End · Swipe</span>
+  </nav>
+
+  <script>
+(function () {
+  const deck = document.getElementById('deck');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let index = 0;
+
+  const idxEl = document.getElementById('slide-index');
+  const fillEl = document.getElementById('progress-fill');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function slideScrollTop(i) {
+    const el = slides[i];
+    const main = el.parentElement;
+    return (main ? main.offsetTop : 0) + el.offsetTop;
+  }
+
+  function currentIndex() {
+    const st = deck.scrollTop;
+    const mid = st + deck.clientHeight * 0.35;
+    let best = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < total; i++) {
+      const top = slideScrollTop(i);
+      const d = Math.abs(top - mid);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  function goTo(i) {
+    index = Math.max(0, Math.min(total - 1, i));
+    deck.scrollTo({
+      top: slideScrollTop(index),
+      behavior: reducedMotion ? 'auto' : 'smooth',
+    });
+    updateChrome();
+  }
+
+  function updateChrome() {
+    index = currentIndex();
+    idxEl.textContent = (index + 1) + ' / ' + total;
+    fillEl.style.width = ((index + 1) / total * 100) + '%';
+    slides.forEach(function (s, i) {
+      s.classList.toggle('is-visible', i === index);
+    });
+  }
+
+  deck.addEventListener('scroll', function () {
+    window.requestAnimationFrame(updateChrome);
+  }, { passive: true });
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting && en.intersectionRatio > 0.35) {
+          en.target.classList.add('is-visible');
+        }
+      });
+    }, { root: deck, threshold: [0, 0.35, 0.55, 1] });
+    slides.forEach(function (s) { io.observe(s); });
+  } else {
+    slides.forEach(function (s) { s.classList.add('is-visible'); });
+  }
+
+  function onKey(e) {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      goTo(currentIndex() + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      goTo(currentIndex() - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goTo(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goTo(total - 1);
+    }
+  }
+  document.addEventListener('keydown', onKey);
+
+  let wheelLock = false;
+  deck.addEventListener('wheel', function (e) {
+    if (wheelLock) return;
+    const dy = e.deltaY;
+    if (dy > 55) {
+      wheelLock = true;
+      goTo(currentIndex() + 1);
+      setTimeout(function () { wheelLock = false; }, 420);
+    } else if (dy < -55) {
+      wheelLock = true;
+      goTo(currentIndex() - 1);
+      setTimeout(function () { wheelLock = false; }, 420);
+    }
+  }, { passive: true });
+
+  let touchY = null;
+  deck.addEventListener('touchstart', function (e) {
+    if (e.changedTouches.length === 1) touchY = e.changedTouches[0].clientY;
+  }, { passive: true });
+  deck.addEventListener('touchend', function (e) {
+    if (touchY == null || e.changedTouches.length !== 1) return;
+    const dy = e.changedTouches[0].clientY - touchY;
+    touchY = null;
+    if (dy < -48) goTo(currentIndex() + 1);
+    else if (dy > 48) goTo(currentIndex() - 1);
+  }, { passive: true });
+
+  deck.focus({ preventScroll: true });
+  goTo(0);
+  updateChrome();
+})();
+  </script>
+</body>
+</html>

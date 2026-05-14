@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "agent-canvas-server",
+    "crates/orca-daemon",
+    "crates/orca-cli",
+    "src-tauri",
+]
+resolver = "2"

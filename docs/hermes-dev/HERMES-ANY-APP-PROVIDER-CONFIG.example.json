@@ -1,0 +1,123 @@
+{
+  "version": "1.0.0",
+  "keyStorage": {
+    "backend": "os_keychain",
+    "encryptAtRest": true,
+    "neverLogPlaintext": true
+  },
+  "tracePolicy": {
+    "recordProviderPerRun": true,
+    "recordModelPerRun": true,
+    "recordFallbackEvents": true
+  },
+  "providers": [
+    {
+      "id": "openrouter",
+      "displayName": "OpenRouter",
+      "type": "hosted_api",
+      "enabled": true,
+      "api": {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "apiKeyRef": "keychain://llm/openrouter",
+        "headers": {
+          "HTTP-Referer": "https://orca.local",
+          "X-Title": "Hermes Any-App Hybrid"
+        },
+        "timeoutMs": 60000,
+        "supportsStreaming": true
+      },
+      "models": [
+        {
+          "id": "openai/gpt-5.4-mini",
+          "displayName": "GPT-5.4 Mini",
+          "supportsTools": true,
+          "contextWindowTokens": 200000,
+          "maxOutputTokens": 8192,
+          "reasoningModes": ["auto", "fast", "expert"],
+          "capabilities": {
+            "supportsJsonMode": true,
+            "supportsVision": true,
+            "supportsAudio": false
+          }
+        },
+        {
+          "id": "anthropic/claude-sonnet-4",
+          "displayName": "Claude Sonnet 4",
+          "supportsTools": true,
+          "contextWindowTokens": 200000,
+          "maxOutputTokens": 8192,
+          "reasoningModes": ["auto", "expert", "heavy"],
+          "capabilities": {
+            "supportsJsonMode": true,
+            "supportsVision": true,
+            "supportsAudio": false
+          }
+        }
+      ],
+      "defaultModelId": "openai/gpt-5.4-mini",
+      "fallbackChain": [
+        {
+          "providerId": "openrouter",
+          "modelId": "anthropic/claude-sonnet-4",
+          "onErrors": ["rate_limit", "overloaded", "provider_error"],
+          "maxRetries": 1,
+          "cooldownMs": 3000
+        }
+      ]
+    },
+    {
+      "id": "local-gateway",
+      "displayName": "Local OpenAI-Compatible Gateway",
+      "type": "openai_compatible",
+      "enabled": true,
+      "api": {
+        "baseUrl": "http://127.0.0.1:8642/v1",
+        "apiKeyRef": "keychain://llm/local-gateway",
+        "headers": {},
+        "timeoutMs": 45000,
+        "supportsStreaming": true
+      },
+      "models": [
+        {
+          "id": "gpt-5.4-mini",
+          "displayName": "Local GPT-5.4 Mini Route",
+          "supportsTools": true,
+          "contextWindowTokens": 131072,
+          "maxOutputTokens": 4096,
+          "reasoningModes": ["auto", "fast"],
+          "capabilities": {
+            "supportsJsonMode": true,
+            "supportsVision": false,
+            "supportsAudio": false
+          }
+        }
+      ],
+      "defaultModelId": "gpt-5.4-mini",
+      "fallbackChain": []
+    }
+  ],
+  "runtimePolicies": {
+    "localOrchestrator": {
+      "providerId": "local-gateway",
+      "modelId": "gpt-5.4-mini",
+      "reasoningMode": "fast",
+      "allowFallback": true,
+      "fallbackOverride": [
+        {
+          "providerId": "openrouter",
+          "modelId": "openai/gpt-5.4-mini",
+          "onErrors": ["timeout", "provider_error", "rate_limit"],
+          "maxRetries": 1,
+          "cooldownMs": 2000
+        }
+      ]
+    },
+    "hermesLead": {
+      "providerId": "openrouter",
+      "modelId": "anthropic/claude-sonnet-4",
+      "reasoningMode": "expert",
+      "allowFallback": true,
+      "fallbackOverride": []
+    }
+  }
+}

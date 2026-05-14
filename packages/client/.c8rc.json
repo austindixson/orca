@@ -1,0 +1,26 @@
+{
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/test/**"
+  ],
+  "reporter": [
+    "text",
+    "lcov",
+    "html"
+  ],
+  "reports-dir": "./coverage",
+  "temp-directory": "./.nyc_output",
+  "all": true,
+  "check-coverage": false,
+  "lines": 0,
+  "functions": 0,
+  "branches": 0,
+  "statements": 0
+}

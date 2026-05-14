@@ -1,0 +1,49 @@
+# CODEOWNERS — Orca Coder
+
+# Default ownership (fallback when no other rule matches)
+* @austindixson
+
+# Cargo workspace and Rust build files
+/Cargo.toml @austindixson
+/Cargo.lock @austindixson
+
+# Rust backend server
+agent-canvas-server/ @austindixson
+
+# Tauri desktop application
+src-tauri/ @austindixson
+
+# Rust crates (daemon + CLI)
+crates/ @austindixson
+
+# Client application (React/TypeScript)
+packages/client/ @austindixson
+
+# Companion Node.js server
+packages/server/ @austindixson
+
+# Headless harness
+packages/harness-headless/ @austindixson
+
+# GitHub Radar tool
+packages/github-radar/ @austindixson
+
+# GitHub Actions workflows
+.github/workflows/ @austindixson
+
+# Documentation
+docs/ @austindixson
+README.md @austindixson
+
+# Root config files
+package.json @austindixson
+.eslintrc.js @austindixson
+.prettierrc @austindixson
+
+# Environment templates
+.env.example @austindixson
+
+# Security-sensitive files
+**/*.pem @austindixson
+**/*.key @austindixson
+**/*.crt @austindixson

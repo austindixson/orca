@@ -1,0 +1,26 @@
+{
+  "name": "agent-canvas-video",
+  "version": "1.0.0",
+  "description": "Orca Coder UI/UX Remotion Video",
+  "type": "module",
+  "scripts": {
+    "start": "remotion studio",
+    "build": "remotion render Video out/video.mp4",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config": "^4.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/web": "^0.0.99",
+    "eslint": "^8.45.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.2.0"
+  }
+}

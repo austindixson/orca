@@ -1,0 +1,21 @@
+[package]
+name = "orca-daemon"
+version = "0.1.0"
+edition = "2021"
+description = "Supervisor for Orca companion server + headless harness (orcad)"
+
+[[bin]]
+name = "orcad"
+path = "src/main.rs"
+
+[dependencies]
+agent-canvas-server = { path = "../../agent-canvas-server" }
+anyhow = "1"
+dirs = "5"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full", "macros", "process", "signal"] }
+toml = "0.8"
+tracing = "0.1"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+which = "6"

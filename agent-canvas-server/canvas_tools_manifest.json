@@ -1,0 +1,212 @@
+{
+  "name": "agent-canvas",
+  "version": "0.1.0",
+  "description": "Hermes / OpenClaude–compatible canvas + workspace tools. Same contract as the built-in orchestrator.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "read_file",
+        "description": "Read a UTF-8 text file from the workspace (relative path). Executed in the connected Orca Coder app.",
+        "parameters": {
+          "type": "object",
+          "properties": { "path": { "type": "string" } },
+          "required": ["path"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "write_file",
+        "description": "Create or overwrite a file.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string" },
+            "content": { "type": "string" }
+          },
+          "required": ["path", "content"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "delete_file",
+        "description": "Delete a workspace file by relative path.",
+        "parameters": {
+          "type": "object",
+          "properties": { "path": { "type": "string" } },
+          "required": ["path"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "list_directory",
+        "description": "List files and folders. Use \".\" for workspace root.",
+        "parameters": {
+          "type": "object",
+          "properties": { "path": { "type": "string" } },
+          "required": ["path"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "web_search",
+        "description": "Search the public web (DuckDuckGo instant answers).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": { "type": "string" },
+            "num_results": { "type": "number" }
+          },
+          "required": ["query"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "open_workspace",
+        "description": "Switch the left sidebar explorer to a folder (absolute path).",
+        "parameters": {
+          "type": "object",
+          "properties": { "path": { "type": "string" } },
+          "required": ["path"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "canvas_list_modules",
+        "description": "List every tile on the infinite canvas.",
+        "parameters": { "type": "object", "properties": {}, "required": [] }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "read_terminal_output",
+        "description": "Read recent PTY output from a terminal tile (tile_id from canvas_list_modules).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "tile_id": { "type": "string" },
+            "max_lines": { "type": "number" }
+          },
+          "required": ["tile_id"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "canvas_create_tile",
+        "description": "Spawn a tile on the canvas.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["terminal", "editor", "browser", "github", "diff", "todo", "agent", "changelog", "benchmark", "remotion"]
+            },
+            "title": { "type": "string" },
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "meta": { "type": "object" }
+          },
+          "required": ["type"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "canvas_update_tile",
+        "description": "Update or remove a tile by id.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "tile_id": { "type": "string" },
+            "remove": { "type": "boolean" },
+            "title": { "type": "string" },
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "w": { "type": "number" },
+            "h": { "type": "number" },
+            "meta": { "type": "object" }
+          },
+          "required": ["tile_id"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "create_project_skill",
+        "description": "Install a task-specific SKILL.md under .cursor/skills and/or .claude/skills.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "skill_slug": { "type": "string" },
+            "description": { "type": "string" },
+            "body_markdown": { "type": "string" },
+            "title": { "type": "string" },
+            "version": { "type": "string" },
+            "install_target": { "type": "string", "enum": ["cursor", "claude", "both"] }
+          },
+          "required": ["skill_slug", "description", "body_markdown"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "record_benchmark_session",
+        "description": "Ingest benchmark JSON; writes .agent-canvas/benchmarks/* and opens benchmark / optional browser + remotion tiles.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "results_json": { "type": "string" },
+            "title": { "type": "string" },
+            "summary": { "type": "string" },
+            "open_docs_browser_tile": { "type": "boolean" },
+            "open_remotion_tile": { "type": "boolean" },
+            "x": { "type": "number" },
+            "y": { "type": "number" }
+          },
+          "required": ["results_json"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "spawn_sub_agent",
+        "description": "Max 5 concurrent; each call: new agent tile + isolated tool loop; completions hand back to orchestrator session.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "display_name": { "type": "string" },
+            "role": { "type": "string" },
+            "task": { "type": "string" },
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "auto_open_team_tracker": { "type": "boolean" },
+            "linked_task_text": {
+              "type": "string",
+              "description": "Match a Tasks list item (exact or substring); badge shows this sub-agent while running."
+            }
+          },
+          "required": ["task"]
+        }
+      }
+    }
+  ]
+}

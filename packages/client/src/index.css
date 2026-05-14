@@ -1,0 +1,813 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * UI tokens (Tailwind maps canvas.* / tile.* / accent.* here).
+   * Pastel preset: analogous slate + lavender + sage — tuned for dark UI (see also Coolors.co palettes).
+   */
+  :root,
+  .theme-ui-default {
+    --canvas-bg: #0d0d12;
+    --canvas-bg-rgb: 13 13 18;
+    --canvas-dot: #1a1a24;
+    --canvas-dot-rgb: 26 26 36;
+    --tile-bg: #13131a;
+    --tile-bg-rgb: 19 19 26;
+    --tile-border: #1e1e2a;
+    --tile-border-rgb: 30 30 42;
+    --tile-header: #16161f;
+    --tile-header-rgb: 22 22 31;
+    --tile-hover: #1a1a26;
+    --tile-hover-rgb: 26 26 38;
+    --accent-teal: #00d4aa;
+    --accent-teal-rgb: 0 212 170;
+    --accent-orange: #ff6b35;
+    --accent-orange-rgb: 255 107 53;
+    --accent-purple: #a855f7;
+    --accent-purple-rgb: 168 85 247;
+    --accent-blue: #3b82f6;
+    --accent-blue-rgb: 59 130 246;
+    --accent-pink: #ec4899;
+    --accent-pink-rgb: 236 72 153;
+    --star-beam: rgba(255, 255, 255, 0.92);
+    --star-dim: rgba(255, 255, 255, 0.22);
+  }
+
+  .theme-ui-pastel {
+    --canvas-bg: #1a1b2e;
+    --canvas-bg-rgb: 26 27 46;
+    --canvas-dot: #252638;
+    --canvas-dot-rgb: 37 38 56;
+    --tile-bg: #222336;
+    --tile-bg-rgb: 34 35 54;
+    --tile-border: #1e1e2a;
+    --tile-border-rgb: 30 30 42;
+    --tile-header: #1e1f2f;
+    --tile-header-rgb: 30 31 47;
+    --tile-hover: #2a2c42;
+    --tile-hover-rgb: 42 44 66;
+    --accent-teal: #7eb8a8;
+    --accent-teal-rgb: 126 184 168;
+    --accent-orange: #d4a574;
+    --accent-orange-rgb: 212 165 116;
+    --accent-purple: #b49fcc;
+    --accent-purple-rgb: 180 159 204;
+    --accent-blue: #7a9cc6;
+    --accent-blue-rgb: 122 156 198;
+    --accent-pink: #c99bb4;
+    --accent-pink-rgb: 201 155 180;
+    --star-beam: rgba(220, 230, 255, 0.5);
+    --star-dim: rgba(200, 210, 240, 0.12);
+  }
+}
+
+/** Obsidian-brain graph: flowing dashes along wikilink edges (SVG path stroke-dashoffset). */
+@keyframes mempalace-edge-flow {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+.mempalace-edge-animated {
+  stroke-dasharray: 5 12;
+  stroke-linecap: round;
+  animation: mempalace-edge-flow 2.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mempalace-edge-animated {
+    animation: none;
+    stroke-dasharray: none;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--canvas-bg);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #e0e0e0;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a3e;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a4e;
+}
+
+.xterm {
+  height: 100%;
+}
+
+.xterm-viewport::-webkit-scrollbar {
+  width: 6px;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb {
+  background: #2a2a3e;
+  border-radius: 3px;
+}
+
+@keyframes slide-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation-duration: 0.2s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+}
+
+.slide-in-from-right {
+  animation-name: slide-in-from-right;
+}
+
+.slide-in-from-bottom {
+  animation-name: slide-in-from-bottom;
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+@keyframes tile-spawn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-tile-spawn {
+  animation: tile-spawn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Tile chrome: animated borders + glow (see Tile.tsx shell variants) */
+.tile-shell-focus {
+  background: linear-gradient(
+    125deg,
+    #00d4aa 0%,
+    #22d3ee 18%,
+    #38bdf8 38%,
+    #818cf8 58%,
+    #c084fc 78%,
+    #00d4aa 100%
+  );
+  background-size: 320% 320%;
+  animation: tile-border-gradient-flow 5s ease-in-out infinite;
+  box-shadow:
+    0 0 28px rgba(0, 212, 170, 0.42),
+    0 0 56px rgba(56, 189, 248, 0.22),
+    0 0 1px rgba(0, 212, 170, 0.35);
+}
+
+.tile-shell-focus-error {
+  background: linear-gradient(
+    125deg,
+    #f87171 0%,
+    #fb923c 25%,
+    #f43f5e 50%,
+    #ef4444 75%,
+    #fca5a5 100%
+  );
+  background-size: 300% 300%;
+  animation: tile-border-gradient-flow 3.2s ease-in-out infinite;
+  box-shadow:
+    0 0 32px rgba(248, 113, 113, 0.45),
+    0 0 64px rgba(239, 68, 68, 0.2),
+    0 0 1px rgba(248, 113, 113, 0.5);
+}
+
+.tile-shell-focus-done {
+  background: linear-gradient(
+    125deg,
+    #10b981 0%,
+    #34d399 35%,
+    #22d3ee 70%,
+    #10b981 100%
+  );
+  background-size: 280% 280%;
+  animation: tile-border-gradient-flow 6s ease-in-out infinite;
+  box-shadow:
+    0 0 26px rgba(16, 185, 129, 0.38),
+    0 0 48px rgba(52, 211, 153, 0.15),
+    0 0 1px rgba(16, 185, 129, 0.4);
+}
+
+@keyframes tile-border-gradient-flow {
+  0%,
+  100% {
+    background-position: 0% 40%;
+  }
+  50% {
+    background-position: 100% 60%;
+  }
+}
+
+.tile-shell-working {
+  background: linear-gradient(90deg, #0d9488, #22d3ee, #0ea5e9, #22d3ee, #0d9488);
+  background-size: 200% 100%;
+  animation: tile-border-gradient-flow 3.5s ease-in-out infinite;
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.22);
+}
+
+.tile-shell-waiting {
+  background: linear-gradient(90deg, #0f766e, #14b8a6, #67e8f9, #14b8a6, #0f766e);
+  background-size: 240% 100%;
+  animation: tile-border-gradient-flow 4.5s ease-in-out infinite;
+  box-shadow:
+    0 0 18px rgba(103, 232, 249, 0.22),
+    0 0 32px rgba(20, 184, 166, 0.14);
+}
+
+.tile-shell-done {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.85), rgba(52, 211, 153, 0.65));
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+}
+
+.tile-shell-idle {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24);
+  background-size: 200% 200%;
+  animation: tile-border-gradient-flow 4s ease-in-out infinite;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.25);
+}
+
+.tile-shell-error {
+  background: linear-gradient(135deg, #dc2626, #f87171, #ef4444, #b91c1c);
+  background-size: 220% 220%;
+  animation: tile-border-gradient-flow 2.5s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.35);
+}
+
+.tile-shell-secondary-focus {
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.45), rgba(56, 189, 248, 0.35));
+  background-size: 200% 200%;
+  animation: tile-border-gradient-flow 5s ease-in-out infinite;
+  box-shadow: 0 0 14px rgba(0, 212, 170, 0.18);
+}
+
+/** Orchestrator canvas tile — success (full spectrum, animated border) */
+.tile-shell-orchestrator-done {
+  background: linear-gradient(
+    90deg,
+    #ef4444,
+    #f97316,
+    #eab308,
+    #22c55e,
+    #06b6d4,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #ef4444
+  );
+  background-size: 400% 100%;
+  animation: tile-orchestrator-rainbow-shift 5s linear infinite;
+  box-shadow:
+    0 0 22px rgba(236, 72, 153, 0.35),
+    0 0 40px rgba(59, 130, 246, 0.2),
+    0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+@keyframes tile-orchestrator-rainbow-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Shooting-star border: bright wedge(s) orbit the tile edge (Settings → Themes → Tile border) */
+@keyframes tile-shooting-star-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tile-shooting-star-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform-origin: center;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 338deg,
+    var(--star-dim) 341deg,
+    var(--star-beam) 346deg,
+    var(--star-dim) 350deg,
+    transparent 360deg
+  );
+  animation: tile-shooting-star-spin 2.85s linear infinite;
+  will-change: transform;
+}
+
+.tile-shooting-star-ring--double {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 148deg,
+    var(--star-dim) 150deg,
+    var(--star-beam) 154deg,
+    var(--star-dim) 158deg,
+    transparent 162deg 322deg,
+    var(--star-dim) 324deg,
+    var(--star-beam) 328deg,
+    var(--star-dim) 332deg,
+    transparent 336deg 360deg
+  );
+}
+
+.theme-ui-pastel .tile-shooting-star-ring,
+.theme-ui-pastel .tile-shooting-star-ring--double {
+  animation-duration: 3.4s;
+  filter: saturate(0.85);
+}
+
+/* Orchestrator sidebar glitter verbs — WebKit needs explicit clip + text-fill; avoid truncate on same node as bg-clip-text */
+@keyframes orchestrator-verb-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+/* Match canvas orchestrator auto-focus pill: teal border + glow (see Tile.tsx) */
+.orchestrator-sidebar-verb-wrap {
+  border-radius: 0.375rem;
+  border: 1px solid rgb(var(--accent-teal-rgb) / 0.45);
+  background: rgba(0, 0, 0, 0.52);
+  padding: 0.2rem 0.45rem;
+  box-shadow: 0 0 20px rgb(var(--accent-teal-rgb) / 0.28);
+}
+
+.orchestrator-sidebar-verb-glitter {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--accent-teal-rgb) / 0.98),
+    rgb(255 255 255),
+    rgb(var(--accent-teal-rgb) / 0.98)
+  );
+  background-size: 200% 100%;
+  background-position: 200% center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: orchestrator-verb-shimmer 5.4s ease-in-out infinite;
+}
+
+/* claw-code spinner_active ≈ blue-400; same sweep as sidebar glitter, hue-shifted */
+.orchestrator-verb-shimmer-claw {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-image: linear-gradient(
+    90deg,
+    rgb(96 165 250 / 0.95),
+    rgb(255 255 255),
+    rgb(96 165 250 / 0.95)
+  );
+  background-size: 200% 100%;
+  background-position: 200% center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: orchestrator-verb-shimmer 5.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orchestrator-verb-shimmer-claw {
+    animation: none;
+    background-image: none;
+    color: rgb(96 165 250 / 0.95);
+    -webkit-text-fill-color: rgb(96 165 250 / 0.95);
+  }
+}
+
+/*
+ * Motion-primitives–style text shimmer (verb copy is event-driven; animation is cosmetic sweep only).
+ * https://motion-primitives.com/docs/text-shimmer
+ */
+.orca-text-shimmer {
+  background-size: 200% 100%;
+  background-position: 200% center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: orca-text-shimmer-move var(--orca-shimmer-duration, 4.5s) linear infinite;
+}
+
+@keyframes orca-text-shimmer-move {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+/* Hue from --orca-shimmer-rgb (space-separated r g b) — matches hosting tile’s idle rim (tileGlow.ts). */
+.orca-text-shimmer--accent {
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--orca-shimmer-rgb) / 0.38) 0%,
+    rgb(var(--orca-shimmer-rgb) / 0.95) calc(50% - var(--orca-shimmer-spread, 18%)),
+    rgb(255 255 255) 50%,
+    rgb(var(--orca-shimmer-rgb) / 0.95) calc(50% + var(--orca-shimmer-spread, 18%)),
+    rgb(var(--orca-shimmer-rgb) / 0.38) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orca-text-shimmer {
+    animation: none;
+    background-image: none;
+  }
+  .orca-text-shimmer--accent {
+    color: rgb(var(--orca-shimmer-rgb) / 0.95);
+    -webkit-text-fill-color: rgb(var(--orca-shimmer-rgb) / 0.95);
+  }
+}
+
+/*
+ * Sidebar panel uses backdrop-blur; that breaks background-clip:text in some engines.
+ * Isolate the verb strip so the teal gradient matches the canvas tile.
+ */
+.orchestrator-sidebar-root .orchestrator-sidebar-verb-wrap {
+  isolation: isolate;
+  position: relative;
+  z-index: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.orchestrator-sidebar-root .orchestrator-sidebar-verb-glitter {
+  transform: translateZ(0);
+}
+
+.theme-ui-pastel .orchestrator-tile-laser {
+  opacity: 0.62;
+}
+
+.theme-ui-pastel .orchestrator-tile-shimmer {
+  opacity: 0.72;
+}
+
+/* Orchestrator auto-focus: horizontal laser sweeps down, then back up, loops */
+@keyframes orchestrator-laser-y {
+  0% {
+    top: 0%;
+    opacity: 0.85;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    top: calc(100% - 3px);
+    opacity: 0.85;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    top: 0%;
+    opacity: 0.85;
+  }
+}
+
+.orchestrator-tile-laser {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(34, 211, 238, 0.2) 18%,
+    rgba(34, 211, 238, 0.95) 50%,
+    rgba(34, 211, 238, 0.2) 82%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 10px rgba(34, 211, 238, 0.85),
+    0 0 22px rgba(34, 211, 238, 0.35);
+  animation: orchestrator-laser-y 5.805s ease-in-out infinite;
+}
+
+/* Softer band for writes / diff */
+@keyframes orchestrator-shimmer-y {
+  0% {
+    top: -30%;
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    top: 100%;
+    opacity: 0.5;
+  }
+}
+
+.orchestrator-tile-shimmer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 42%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(168, 85, 247, 0.14) 45%,
+    rgba(34, 211, 238, 0.12) 55%,
+    transparent 100%
+  );
+  filter: blur(0.5px);
+  animation: orchestrator-shimmer-y 2.75s ease-in-out infinite;
+}
+
+@keyframes orchestrator-focus-pulse-ring {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 1px rgba(0, 212, 170, 0.22);
+    opacity: 0.85;
+  }
+  50% {
+    box-shadow: inset 0 0 0 2px rgba(0, 212, 170, 0.55);
+    opacity: 1;
+  }
+}
+
+.orchestrator-tile-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  animation: orchestrator-focus-pulse-ring 1.55s ease-in-out infinite;
+}
+
+/* Canvas: orchestrator hub → modules (behind tiles, world space)
+   Dash offset animates by exactly one pattern period (--hub-flow-period / --hub-spark-period) per loop to avoid visual jumps.
+   Explicit `from` keeps subpixel / engine quirks from popping at loop boundaries. */
+@keyframes orchestrator-hub-link-flow-move {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: var(--hub-flow-period, -110);
+  }
+}
+
+@keyframes orchestrator-hub-link-spark-move {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: var(--hub-spark-period, -110);
+  }
+}
+
+.orchestrator-hub-links {
+  shape-rendering: geometricPrecision;
+}
+
+.orchestrator-hub-links line,
+.orchestrator-hub-links path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  backface-visibility: hidden;
+}
+
+.orchestrator-hub-link-track {
+  stroke: rgb(var(--accent-teal-rgb) / 0.16);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.orchestrator-hub-link-flow {
+  stroke: rgb(var(--accent-teal-rgb) / 0.88);
+  stroke-width: 1.55;
+  stroke-linecap: round;
+  /* Lighter glow than before — less GPU overdraw when many segments are visible */
+  filter: drop-shadow(0 0 4px rgb(var(--accent-teal-rgb) / 0.42));
+  will-change: stroke-dashoffset;
+  animation: orchestrator-hub-link-flow-move 2.35s linear infinite;
+}
+
+.orchestrator-hub-link-spark {
+  stroke: rgba(255, 255, 255, 0.52);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgb(var(--accent-teal-rgb) / 0.5));
+  will-change: stroke-dashoffset;
+  animation: orchestrator-hub-link-spark-move 1.25s linear infinite;
+}
+
+.theme-ui-pastel .orchestrator-hub-link-spark {
+  stroke: rgba(220, 230, 255, 0.38);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orchestrator-hub-link-flow,
+  .orchestrator-hub-link-spark {
+    animation: none !important;
+  }
+}
+
+/* Orchestrator agent “reading” / “writing” line highlights (Monaco decorations) */
+.monaco-editor .orca-agent-read-line {
+  background-color: rgba(45, 212, 191, 0.16) !important;
+  box-shadow: inset 3px 0 0 0 rgba(45, 212, 191, 0.75);
+}
+.monaco-editor .orca-agent-write-flash-line {
+  background-color: rgba(251, 191, 36, 0.2) !important;
+  animation: orca-agent-write-flash-fade 1.35s ease-out forwards;
+}
+.monaco-editor .orca-agent-write-flash-line-static {
+  background-color: rgba(251, 191, 36, 0.22) !important;
+  box-shadow: inset 3px 0 0 0 rgba(251, 191, 36, 0.65);
+}
+.monaco-editor .orca-agent-write-line-done {
+  background-color: rgba(251, 191, 36, 0.1) !important;
+  box-shadow: inset 2px 0 0 0 rgba(251, 191, 36, 0.45);
+}
+.monaco-editor .orca-agent-write-line-pending {
+  background-color: rgba(120, 113, 90, 0.06) !important;
+  /* Hide text for lines that haven't been highlighted yet - creates "blank document" effect */
+  opacity: 0 !important;
+  color: transparent !important;
+}
+.monaco-editor .orca-agent-write-line-pending .mtk1,
+.monaco-editor .orca-agent-write-line-pending .mtk10,
+.monaco-editor .orca-agent-write-line-pending .mtk11,
+.monaco-editor .orca-agent-write-line-pending .mtk12,
+.monaco-editor .orca-agent-write-line-pending .mtk13,
+.monaco-editor .orca-agent-write-line-pending .mtk14,
+.monaco-editor .orca-agent-write-line-pending .mtk15,
+.monaco-editor .orca-agent-write-line-pending .mtk16,
+.monaco-editor .orca-agent-write-line-pending .mtk17,
+.monaco-editor .orca-agent-write-line-pending .mtk18,
+.monaco-editor .orca-agent-write-line-pending .mtk19,
+.monaco-editor .orca-agent-write-line-pending .mtk2,
+.monaco-editor .orca-agent-write-line-pending .mtk20,
+.monaco-editor .orca-agent-write-line-pending .mtk3,
+.monaco-editor .orca-agent-write-line-pending .mtk4,
+.monaco-editor .orca-agent-write-line-pending .mtk5,
+.monaco-editor .orca-agent-write-line-pending .mtk6,
+.monaco-editor .orca-agent-write-line-pending .mtk7,
+.monaco-editor .orca-agent-write-line-pending .mtk8,
+.monaco-editor .orca-agent-write-line-pending .mtk9 {
+  color: transparent !important;
+}
+@keyframes orca-agent-write-flash-fade {
+  from {
+    background-color: rgba(251, 191, 36, 0.35);
+  }
+  to {
+    background-color: rgba(251, 191, 36, 0.08);
+  }
+}
+
+/**
+ * Range sliders: neutral dark-gray groove (replaces native light/white track) + accent thumb.
+ * Pairs with Tailwind `accent-accent-teal`.
+ */
+input[type='range'].orca-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  color-scheme: dark;
+}
+
+input[type='range'].orca-range:focus {
+  outline: none;
+}
+
+input[type='range'].orca-range:focus-visible {
+  outline: 2px solid rgb(var(--accent-teal-rgb) / 0.35);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Track: mid dark gray — not near-black (avoids “too dark” vs. old white default). */
+input[type='range'].orca-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: rgb(58 58 68);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.28);
+  border: 1px solid rgb(72 72 84);
+}
+
+input[type='range'].orca-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -4px;
+  border-radius: 9999px;
+  background: var(--accent-teal);
+  border: 1px solid rgb(0 0 0 / 0.45);
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 0.4),
+    0 0 0 1px rgb(var(--accent-teal-rgb) / 0.25);
+}
+
+input[type='range'].orca-range::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: rgb(58 58 68);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.28);
+  border: 1px solid rgb(72 72 84);
+}
+
+input[type='range'].orca-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 9999px;
+  background: rgb(var(--accent-teal-rgb) / 0.42);
+  border: 1px solid rgb(0 0 0 / 0.2);
+}
+
+input[type='range'].orca-range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 1px solid rgb(0 0 0 / 0.45);
+  border-radius: 9999px;
+  background: var(--accent-teal);
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 0.4),
+    0 0 0 1px rgb(var(--accent-teal-rgb) / 0.25);
+}
+
+/* Settings modal: same system stack as the rest of the app */
+.settings-modal-root {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+}

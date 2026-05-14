@@ -1,0 +1,28 @@
+[package]
+name = "agent-canvas-server"
+version = "0.1.0"
+edition = "2021"
+description = "Rust companion server: HTTP + WebSocket (PTY, agents, canvas bridge). Replaces packages/server."
+
+[lib]
+name = "agent_canvas_server"
+path = "src/lib.rs"
+
+[[bin]]
+name = "agent-canvas-server"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.7", features = ["ws"] }
+dirs = "5"
+futures-util = "0.3"
+portable-pty = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+tokio = { version = "1", features = ["full", "macros"] }
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1", features = ["v4"] }

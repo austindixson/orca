@@ -1,0 +1,59 @@
+/**
+ * Orca quiet tooltips: driver.js popover with popoverClass `orca-tooltip`.
+ * Compact copy; sits above canvas chrome and most modals.
+ */
+
+.orca-tooltip.driver-popover {
+  z-index: 100050 !important;
+  min-width: 0 !important;
+  max-width: min(320px, calc(100vw - 24px));
+  padding: 7px 11px !important;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(24, 24, 27, 0.98);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #e5e7eb;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.35),
+    0 12px 28px rgba(0, 0, 0, 0.45);
+  font-size: 11.5px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+}
+
+.orca-tooltip .driver-popover-title {
+  display: none !important;
+}
+
+.orca-tooltip .driver-popover-description {
+  margin: 0 !important;
+  font-size: 11.5px !important;
+  line-height: 1.45 !important;
+  font-weight: 400 !important;
+  color: #e5e7eb !important;
+  white-space: pre-wrap;
+}
+
+.orca-tooltip .driver-popover-footer {
+  display: none !important;
+}
+
+.orca-tooltip .driver-popover-close-btn {
+  display: none !important;
+}
+
+/* Arrow fill matches popover background */
+.orca-tooltip .driver-popover-arrow-side-left {
+  border-left-color: rgba(24, 24, 27, 0.98) !important;
+}
+.orca-tooltip .driver-popover-arrow-side-right {
+  border-right-color: rgba(24, 24, 27, 0.98) !important;
+}
+.orca-tooltip .driver-popover-arrow-side-top {
+  border-top-color: rgba(24, 24, 27, 0.98) !important;
+}
+.orca-tooltip .driver-popover-arrow-side-bottom {
+  border-bottom-color: rgba(24, 24, 27, 0.98) !important;
+}

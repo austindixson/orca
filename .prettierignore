@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Rust
+target/
+*.rs
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output
+
+# Misc
+.DS_Store
+*.pem
+.env
+.env.*
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Third-party
+vendor/
+
+# Tauri
+src-tauri/target/
+
+# Generated files
+*.generated.*

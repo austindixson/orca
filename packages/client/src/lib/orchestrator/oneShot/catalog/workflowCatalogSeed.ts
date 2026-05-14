@@ -1,0 +1,728 @@
+/**
+ * Seeded workflow catalog for One-Shot runtime intent routing.
+ * Source of truth: hermes-dev/HERMES-ANY-APP-WORKFLOW-CATALOG.json
+ * Regenerate when catalog changes.
+ */
+export const HYBRID_WORKFLOW_CATALOG_SEED = {
+  "schema_version": "1.0.0",
+  "catalog_id": "hermes-any-app-workflows",
+  "description": "Machine-readable companion for Hermes Any-App Hybrid workflow packs and intent routing.",
+  "risk_tiers": [
+    "read_only",
+    "mutating",
+    "destructive"
+  ],
+  "defaults": {
+    "destructive_actions_require_explicit_confirmation": true,
+    "prefer_upload_verify_before_cleanup": true,
+    "log_plaintext_secrets": false
+  },
+  "ui_shell": {
+    "modes": [
+      "desktop_sidebar",
+      "spotlight_launcher"
+    ],
+    "desktop_sidebar": {
+      "available_system_wide": true,
+      "default_width_percent": 25,
+      "responsive_push_layout": true,
+      "width_percent_bounds": {
+        "min": 20,
+        "max": 40
+      }
+    },
+    "spotlight_launcher": {
+      "global_shortcut_default": "Control+Space",
+      "open_latency_target_ms": 150,
+      "centered_overlay": true
+    },
+    "attachments": {
+      "drag_drop_enabled": true,
+      "paste_image_to_local_path_enabled": true,
+      "large_text_instant_truncation_enabled": true,
+      "truncation_placeholder_format": "[TRUNCATED: <kept_lines>/<total_lines> lines, <kept_chars>/<total_chars> chars]"
+    }
+  },
+  "llm_connectivity": {
+    "orca_parity_required": true,
+    "provider_types": [
+      "hosted_api",
+      "openai_compatible",
+      "local_gateway"
+    ],
+    "multi_provider_settings": true,
+    "per_run_model_selection": true,
+    "default_model_preference": true,
+    "provider_config_schema_path": "hermes-dev/HERMES-ANY-APP-PROVIDER-CONFIG.schema.json",
+    "provider_config_example_path": "hermes-dev/HERMES-ANY-APP-PROVIDER-CONFIG.example.json",
+    "fallback_policy": {
+      "enabled": true,
+      "triggers": [
+        "rate_limit",
+        "provider_error",
+        "timeout"
+      ]
+    },
+    "key_storage": {
+      "encrypted_at_rest": true,
+      "never_log_plaintext": true
+    },
+    "trace_provider_model_per_run": true
+  },
+  "auth_lanes": {
+    "oauth": {
+      "google_drive_first": true,
+      "flow": "pkce",
+      "token_storage_encrypted": true,
+      "pre_run_health_checks": [
+        "token_valid",
+        "scope_sufficient",
+        "api_reachable"
+      ]
+    },
+    "browser_session": {
+      "x_first": true,
+      "interactive_capture_required": true,
+      "bundle_encrypted": true,
+      "bundle_fields": [
+        "cookies_snapshot",
+        "storage_snapshot",
+        "runtime_fingerprint_hash",
+        "domain_binding",
+        "issued_at",
+        "expires_at",
+        "ttl_policy"
+      ],
+      "domain_aliases": [
+        "x.com",
+        "twitter.com"
+      ],
+      "health_states": [
+        "healthy",
+        "expiring",
+        "invalid"
+      ],
+      "invalid_state_action": "hard_stop_reauth"
+    },
+    "hybrid_router": {
+      "command_step_lane_selection": true,
+      "lane_mapping": {
+        "official_api": "oauth",
+        "browser_ui": "browser_session",
+        "hybrid": "per_step"
+      },
+      "bounded_fallback": true,
+      "trace_lane_selection_per_step": true,
+      "redact_auth_secrets_in_trace": true
+    }
+  },
+  "tauri_browser_hub": {
+    "enabled": true,
+    "description": "Full-featured embedded browser tab with bookmark home and quick app registration.",
+    "default_bookmark_collections": [
+      {
+        "id": "google-suite",
+        "title": "Google Suite",
+        "apps": [
+          {
+            "name": "Gmail",
+            "url": "https://mail.google.com"
+          },
+          {
+            "name": "Google Drive",
+            "url": "https://drive.google.com"
+          },
+          {
+            "name": "Google Docs",
+            "url": "https://docs.google.com"
+          },
+          {
+            "name": "Google Sheets",
+            "url": "https://sheets.google.com"
+          },
+          {
+            "name": "Google Calendar",
+            "url": "https://calendar.google.com"
+          }
+        ]
+      },
+      {
+        "id": "creator-social",
+        "title": "Creator + Social",
+        "apps": [
+          {
+            "name": "X",
+            "url": "https://x.com"
+          },
+          {
+            "name": "YouTube Studio",
+            "url": "https://studio.youtube.com"
+          },
+          {
+            "name": "LinkedIn",
+            "url": "https://www.linkedin.com"
+          },
+          {
+            "name": "Reddit",
+            "url": "https://www.reddit.com"
+          }
+        ]
+      },
+      {
+        "id": "work-collab",
+        "title": "Work + Collaboration",
+        "apps": [
+          {
+            "name": "Slack",
+            "url": "https://app.slack.com"
+          },
+          {
+            "name": "Notion",
+            "url": "https://www.notion.so"
+          },
+          {
+            "name": "Linear",
+            "url": "https://linear.app"
+          },
+          {
+            "name": "Zendesk",
+            "url": "https://www.zendesk.com"
+          }
+        ]
+      }
+    ],
+    "registration_wizard": {
+      "enabled": true,
+      "steps": [
+        "pick_apps",
+        "choose_auth_method",
+        "set_allowed_domains",
+        "run_discovery",
+        "review_command_contracts",
+        "set_safety_policies",
+        "save_workflow_pack"
+      ],
+      "step_details": {
+        "pick_apps": "User selects favorite apps from presets or adds custom URLs.",
+        "choose_auth_method": "Pick OAuth/API, browser-session, or hybrid per app.",
+        "set_allowed_domains": "Explicit allowlist for all automation routes.",
+        "run_discovery": "Discovery crawl captures actionable UI/API surfaces.",
+        "review_command_contracts": "User approves generated commands and typed inputs.",
+        "set_safety_policies": "Configure mutating previews and destructive confirmations.",
+        "save_workflow_pack": "Persist pack with intent mappings and health checks."
+      }
+    }
+  },
+  "workflows": [
+    {
+      "id": "x-post-update",
+      "title": "Post a product update on X",
+      "user_says_examples": [
+        "Post this on X: v0.9 is live, patch notes in thread.",
+        "Send a tweet announcing today's release."
+      ],
+      "pack": "x-social-ops",
+      "target": {
+        "type": "browser_ui",
+        "app": "x",
+        "domain": "x.com"
+      },
+      "commands": [
+        "x.compose.open",
+        "x.tweet.send"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "text"
+      ],
+      "optional_slots": [
+        "reply_to_id",
+        "media_paths"
+      ]
+    },
+    {
+      "id": "x-reply-top-mentions",
+      "title": "Reply to top mentions from last 24h",
+      "user_says_examples": [
+        "Reply to today's top 10 mentions with this template."
+      ],
+      "pack": "x-social-ops",
+      "target": {
+        "type": "browser_ui",
+        "app": "x",
+        "domain": "x.com"
+      },
+      "commands": [
+        "x.mentions.list",
+        "x.tweet.reply.batch"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "time_window",
+        "reply_template"
+      ],
+      "optional_slots": [
+        "limit"
+      ]
+    },
+    {
+      "id": "x-schedule-from-draft",
+      "title": "Queue tweets from a draft file",
+      "user_says_examples": [
+        "Take tweets.md and schedule these for tomorrow."
+      ],
+      "pack": "x-social-ops",
+      "target": {
+        "type": "browser_ui",
+        "app": "x",
+        "domain": "x.com"
+      },
+      "commands": [
+        "local.file.read",
+        "x.post.schedule.batch"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "draft_file_path",
+        "schedule_window"
+      ],
+      "optional_slots": [
+        "timezone"
+      ]
+    },
+    {
+      "id": "drive-upload-active-folder",
+      "title": "Upload active folder to Google Drive",
+      "user_says_examples": [
+        "Move all of these to Google Drive under Client A/April."
+      ],
+      "pack": "drive-ingest",
+      "target": {
+        "type": "official_api",
+        "app": "google_drive",
+        "domain": "drive.google.com"
+      },
+      "commands": [
+        "local.folder.list",
+        "gdrive.folder.ensure",
+        "gdrive.batch.upload"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "source_folder",
+        "destination_folder"
+      ],
+      "optional_slots": []
+    },
+    {
+      "id": "drive-upload-then-clean-local",
+      "title": "Upload and then clean local files",
+      "user_says_examples": [
+        "Upload these and delete local originals after verification."
+      ],
+      "pack": "drive-ingest",
+      "target": {
+        "type": "hybrid",
+        "app": "google_drive_local",
+        "domain": "drive.google.com"
+      },
+      "commands": [
+        "gdrive.batch.upload",
+        "gdrive.verify.uploads",
+        "local.delete_batch"
+      ],
+      "risk": "destructive",
+      "required_slots": [
+        "source_folder",
+        "destination_folder"
+      ],
+      "optional_slots": [
+        "cleanup_policy"
+      ],
+      "approval_required": true
+    },
+    {
+      "id": "billing-export-to-drive",
+      "title": "Weekly invoice export to Drive",
+      "user_says_examples": [
+        "Export this week's invoices CSV and save to Drive/Finance."
+      ],
+      "pack": "billing-reports",
+      "target": {
+        "type": "hybrid",
+        "app": "billing_google_drive",
+        "domain": "drive.google.com"
+      },
+      "commands": [
+        "billing.invoices.export_csv",
+        "gdrive.file.upload"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "date_range",
+        "destination_folder"
+      ],
+      "optional_slots": [
+        "file_name"
+      ]
+    },
+    {
+      "id": "drive-create-client-tree",
+      "title": "Create client folder structure in Drive",
+      "user_says_examples": [
+        "Create onboarding folder tree for Acme in Drive."
+      ],
+      "pack": "drive-ops",
+      "target": {
+        "type": "official_api",
+        "app": "google_drive",
+        "domain": "drive.google.com"
+      },
+      "commands": [
+        "gdrive.folder.ensure.batch"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "client_name",
+        "folder_blueprint"
+      ],
+      "optional_slots": []
+    },
+    {
+      "id": "notion-meeting-note-template",
+      "title": "Generate meeting notes from template",
+      "user_says_examples": [
+        "Create meeting notes page from template in Notion for today."
+      ],
+      "pack": "notion-workspace",
+      "target": {
+        "type": "official_api",
+        "app": "notion",
+        "domain": "notion.so"
+      },
+      "commands": [
+        "notion.page.create_from_template"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "template_id",
+        "title"
+      ],
+      "optional_slots": [
+        "database_id",
+        "tags"
+      ]
+    },
+    {
+      "id": "notion-transcript-to-tasks",
+      "title": "Turn transcript into Notion tasks",
+      "user_says_examples": [
+        "Convert this transcript into tasks in Notion backlog."
+      ],
+      "pack": "notion-workspace",
+      "target": {
+        "type": "hybrid",
+        "app": "notion_local",
+        "domain": "notion.so"
+      },
+      "commands": [
+        "local.file.read",
+        "notion.tasks.create.batch"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "transcript_path",
+        "backlog_database_id"
+      ],
+      "optional_slots": [
+        "assignee",
+        "priority_default"
+      ]
+    },
+    {
+      "id": "crm-tag-stale-leads",
+      "title": "Update CRM stale lead tags",
+      "user_says_examples": [
+        "Tag all leads untouched for 30+ days as re-engage-q2."
+      ],
+      "pack": "crm-ops",
+      "target": {
+        "type": "official_api",
+        "app": "crm",
+        "domain": "crm"
+      },
+      "commands": [
+        "crm.leads.search",
+        "crm.leads.tag.batch"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "stale_days",
+        "tag"
+      ],
+      "optional_slots": [
+        "pipeline",
+        "owner"
+      ]
+    },
+    {
+      "id": "crm-daily-pipeline-to-slack",
+      "title": "Build daily pipeline summary to Slack",
+      "user_says_examples": [
+        "Give me daily pipeline summary and post it to Slack."
+      ],
+      "pack": "crm-slack-reporting",
+      "target": {
+        "type": "hybrid",
+        "app": "crm_slack",
+        "domain": "app.slack.com"
+      },
+      "commands": [
+        "crm.pipeline.report",
+        "slack.message.send"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "date_range",
+        "slack_channel"
+      ],
+      "optional_slots": [
+        "format"
+      ]
+    },
+    {
+      "id": "zendesk-followups-to-linear",
+      "title": "Create support follow-up tasks from Zendesk",
+      "user_says_examples": [
+        "Create follow-up tasks for unresolved high-priority tickets."
+      ],
+      "pack": "support-ops",
+      "target": {
+        "type": "hybrid",
+        "app": "zendesk_linear",
+        "domain": "zendesk.com"
+      },
+      "commands": [
+        "zendesk.tickets.list",
+        "linear.issue.create.batch"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "ticket_filter",
+        "linear_project"
+      ],
+      "optional_slots": [
+        "assignee"
+      ]
+    },
+    {
+      "id": "design-assets-upload-and-share",
+      "title": "Sync design assets to Drive and share link",
+      "user_says_examples": [
+        "Upload /Brand/Launch assets and send share link to #design."
+      ],
+      "pack": "design-delivery",
+      "target": {
+        "type": "hybrid",
+        "app": "gdrive_slack",
+        "domain": "drive.google.com"
+      },
+      "commands": [
+        "gdrive.batch.upload",
+        "gdrive.link.create",
+        "slack.message.send"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "source_folder",
+        "destination_folder",
+        "slack_channel"
+      ],
+      "optional_slots": [
+        "link_permission"
+      ]
+    },
+    {
+      "id": "cms-publish-draft-from-folder",
+      "title": "Publish blog draft from docs folder",
+      "user_says_examples": [
+        "Publish latest docs/blog/*.md as a draft post."
+      ],
+      "pack": "cms-publisher",
+      "target": {
+        "type": "hybrid",
+        "app": "cms_local",
+        "domain": "cms"
+      },
+      "commands": [
+        "local.glob.read",
+        "cms.post.create_draft"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "glob_pattern"
+      ],
+      "optional_slots": [
+        "author",
+        "tags"
+      ]
+    },
+    {
+      "id": "analytics-snapshot-to-drive",
+      "title": "End-of-week analytics snapshot",
+      "user_says_examples": [
+        "Capture this week analytics screenshots and upload report pack."
+      ],
+      "pack": "analytics-capture",
+      "target": {
+        "type": "hybrid",
+        "app": "analytics_drive",
+        "domain": "drive.google.com"
+      },
+      "commands": [
+        "web.capture.dashboard",
+        "local.archive.create",
+        "gdrive.file.upload"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "dashboard_urls",
+        "destination_folder"
+      ],
+      "optional_slots": [
+        "date_range",
+        "archive_name"
+      ]
+    },
+    {
+      "id": "ad-cac-anomaly-alert",
+      "title": "Compare ad spend vs conversions and alert anomalies",
+      "user_says_examples": [
+        "Alert me if CAC rose above 20% week-over-week."
+      ],
+      "pack": "marketing-monitor",
+      "target": {
+        "type": "hybrid",
+        "app": "ads_analytics_slack",
+        "domain": "app.slack.com"
+      },
+      "commands": [
+        "ads.metrics.fetch",
+        "analytics.metrics.fetch",
+        "monitor.rule.evaluate",
+        "slack.alert.send"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "threshold_percent",
+        "date_range",
+        "slack_channel"
+      ],
+      "optional_slots": [
+        "metric"
+      ]
+    },
+    {
+      "id": "local-rename-normalize-upload",
+      "title": "Bulk rename and normalize before upload",
+      "user_says_examples": [
+        "Rename all files in this folder to YYYY-MM-DD_client_topic and upload."
+      ],
+      "pack": "file-normalizer",
+      "target": {
+        "type": "hybrid",
+        "app": "local_drive",
+        "domain": "drive.google.com"
+      },
+      "commands": [
+        "local.file.rename.batch",
+        "gdrive.batch.upload"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "source_folder",
+        "rename_pattern",
+        "destination_folder"
+      ],
+      "optional_slots": []
+    },
+    {
+      "id": "hiring-csv-to-linear",
+      "title": "Recruiter workflow from spreadsheet",
+      "user_says_examples": [
+        "Take candidates.csv and create interview tasks in Linear."
+      ],
+      "pack": "hiring-ops",
+      "target": {
+        "type": "hybrid",
+        "app": "local_linear",
+        "domain": "linear.app"
+      },
+      "commands": [
+        "local.csv.read",
+        "linear.issue.create.batch"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "csv_path",
+        "linear_project"
+      ],
+      "optional_slots": [
+        "assignee"
+      ]
+    },
+    {
+      "id": "release-checklist-status-post",
+      "title": "Release checklist runner",
+      "user_says_examples": [
+        "Run release checklist and post status update."
+      ],
+      "pack": "release-ops",
+      "target": {
+        "type": "hybrid",
+        "app": "repo_ci_slack",
+        "domain": "app.slack.com"
+      },
+      "commands": [
+        "repo.checks.run",
+        "ci.status.read",
+        "slack.message.send"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "release_tag",
+        "slack_channel"
+      ],
+      "optional_slots": [
+        "checklist_path"
+      ]
+    },
+    {
+      "id": "launch-day-multiapp-push",
+      "title": "Multi-app launch day push",
+      "user_says_examples": [
+        "Use launch-day pack and publish release note everywhere."
+      ],
+      "pack": "launch-day",
+      "target": {
+        "type": "hybrid",
+        "app": "x_notion_slack_drive",
+        "domain": "x.com"
+      },
+      "commands": [
+        "x.tweet.send",
+        "notion.page.publish",
+        "slack.message.send",
+        "gdrive.file.upload"
+      ],
+      "risk": "mutating",
+      "required_slots": [
+        "release_note_text"
+      ],
+      "optional_slots": [
+        "channels",
+        "destination_folder"
+      ]
+    }
+  ]
+} as const

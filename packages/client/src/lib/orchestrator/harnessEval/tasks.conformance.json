@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "split": "conformance",
+  "tasks": [
+    {
+      "id": "p0-non-empty-final-after-tools",
+      "kind": "terminal_success_requires_non_empty_final"
+    },
+    {
+      "id": "p0-recoverable-failure-paths-exposed",
+      "kind": "single_failure_requires_recovery_attempt"
+    },
+    {
+      "id": "p1-prompt-flow-contract-present",
+      "kind": "prompt_flow_contract_present"
+    },
+    {
+      "id": "p1-interruption-answer-then-resume-offer",
+      "kind": "interruption_answer_then_resume_offer"
+    },
+    {
+      "id": "p0-safety-gate-destructive-shell",
+      "kind": "safety_gate_blocks_destructive_shell"
+    },
+    {
+      "id": "p0-cancellation-integrity-wait-sub-agent",
+      "kind": "wait_for_sub_agent_cancellation_integrity"
+    },
+    {
+      "id": "p0-error-first-recovery-branching",
+      "kind": "error_first_recovery_branching"
+    },
+    {
+      "id": "conformance-file-mutation-sensitive-path-branching",
+      "kind": "file_mutation_sensitive_path_branching"
+    },
+    {
+      "id": "conformance-regression-canary-detection",
+      "kind": "regression_canary_detection"
+    },
+    {
+      "id": "conformance-grounding-evidence-contract",
+      "kind": "grounding_evidence_contract"
+    },
+    {
+      "id": "conformance-stale-data-refresh-contract",
+      "kind": "stale_data_refresh_contract"
+    },
+    {
+      "id": "conformance-tool-failure-uncertainty-contract",
+      "kind": "tool_failure_uncertainty_contract"
+    },
+    {
+      "id": "conformance-mid-run-policy-steering-contract",
+      "kind": "mid_run_policy_steering_contract"
+    },
+    {
+      "id": "p2-iteration-cap-enforcement",
+      "kind": "iteration_cap_enforcement"
+    },
+    {
+      "id": "p1-parallel-tool-conflict-guard",
+      "kind": "parallel_tool_conflict_guard"
+    },
+    {
+      "id": "p1-exactly-once-resume-handoff-integrity",
+      "kind": "exactly_once_resume_handoff_integrity"
+    },
+    {
+      "id": "p1-heartbeat-synthetic-tag-skip-hygiene",
+      "kind": "heartbeat_synthetic_tag_skip_hygiene"
+    },
+    {
+      "id": "p1-trace-phase-end-state-completeness",
+      "kind": "trace_phase_end_state_completeness"
+    }
+  ]
+}

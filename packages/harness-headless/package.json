@@ -1,0 +1,21 @@
+{
+  "name": "@agent-canvas/harness-headless",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "start": "node dist/harness-headless.mjs",
+    "dev": "node dist/harness-headless.mjs"
+  },
+  "dependencies": {
+    "openai": "^4.52.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.39",
+    "@types/ws": "^8.5.13",
+    "tsup": "^8.3.5",
+    "typescript": "^5.4.5"
+  }
+}

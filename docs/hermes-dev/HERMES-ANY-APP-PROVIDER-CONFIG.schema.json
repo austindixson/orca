@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orca.local/schemas/hermes-any-app-provider-config.schema.json",
+  "title": "Hermes Any-App Provider Config",
+  "description": "Orca-parity multi-provider/model settings for local orchestrator and Hermes Lead runtime policies.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "keyStorage",
+    "tracePolicy",
+    "providers",
+    "runtimePolicies"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "keyStorage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "encryptAtRest", "neverLogPlaintext"],
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": ["os_keychain", "tauri_secure_store", "external_secret_manager"]
+        },
+        "encryptAtRest": { "type": "boolean" },
+        "neverLogPlaintext": { "type": "boolean" }
+      }
+    },
+    "tracePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordProviderPerRun", "recordModelPerRun"],
+      "properties": {
+        "recordProviderPerRun": { "type": "boolean" },
+        "recordModelPerRun": { "type": "boolean" },
+        "recordFallbackEvents": { "type": "boolean", "default": true }
+      }
+    },
+    "providers": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/provider" }
+    },
+    "runtimePolicies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["localOrchestrator", "hermesLead"],
+      "properties": {
+        "localOrchestrator": { "$ref": "#/$defs/runtimeModePolicy" },
+        "hermesLead": { "$ref": "#/$defs/runtimeModePolicy" }
+      }
+    }
+  },
+  "$defs": {
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "displayName",
+        "type",
+        "enabled",
+        "api",
+        "models",
+        "defaultModelId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+        },
+        "displayName": { "type": "string", "minLength": 1 },
+        "type": {
+          "type": "string",
+          "enum": ["hosted_api", "openai_compatible", "local_gateway"]
+        },
+        "enabled": { "type": "boolean" },
+        "api": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["baseUrl", "apiKeyRef", "timeoutMs"],
+          "properties": {
+            "baseUrl": { "type": "string", "format": "uri" },
+            "apiKeyRef": { "type": "string", "minLength": 1 },
+            "headers": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "default": {}
+            },
+            "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 180000 },
+            "supportsStreaming": { "type": "boolean", "default": true }
+          }
+        },
+        "models": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/model" }
+        },
+        "defaultModelId": { "type": "string", "minLength": 1 },
+        "fallbackChain": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fallbackStep" },
+          "default": []
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "displayName",
+        "supportsTools",
+        "contextWindowTokens",
+        "reasoningModes"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "displayName": { "type": "string", "minLength": 1 },
+        "supportsTools": { "type": "boolean" },
+        "contextWindowTokens": { "type": "integer", "minimum": 1024 },
+        "maxOutputTokens": { "type": "integer", "minimum": 64 },
+        "reasoningModes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": ["auto", "fast", "expert", "heavy"]
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "supportsJsonMode": { "type": "boolean", "default": false },
+            "supportsVision": { "type": "boolean", "default": false },
+            "supportsAudio": { "type": "boolean", "default": false }
+          },
+          "default": {}
+        }
+      }
+    },
+    "fallbackStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providerId", "modelId", "onErrors"],
+      "properties": {
+        "providerId": { "type": "string", "minLength": 1 },
+        "modelId": { "type": "string", "minLength": 1 },
+        "onErrors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": ["rate_limit", "provider_error", "timeout", "overloaded", "quota"]
+          }
+        },
+        "maxRetries": { "type": "integer", "minimum": 0, "maximum": 5, "default": 1 },
+        "cooldownMs": { "type": "integer", "minimum": 0, "maximum": 120000, "default": 2000 }
+      }
+    },
+    "runtimeModePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providerId", "modelId", "reasoningMode", "allowFallback"],
+      "properties": {
+        "providerId": { "type": "string", "minLength": 1 },
+        "modelId": { "type": "string", "minLength": 1 },
+        "reasoningMode": {
+          "type": "string",
+          "enum": ["auto", "fast", "expert", "heavy"]
+        },
+        "allowFallback": { "type": "boolean" },
+        "fallbackOverride": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fallbackStep" },
+          "default": []
+        }
+      }
+    }
+  }
+}

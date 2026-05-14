@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hermes + Orca Coder — Setup</title>
+  <style>
+    :root {
+      --bg: #0a0e12;
+      --panel: #121a22;
+      --text: #e8eef4;
+      --muted: #8a9aac;
+      --accent: #2dd4bf;
+      --accent-dim: rgba(45, 212, 191, 0.15);
+      --border: rgba(255, 255, 255, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    body { overflow: hidden; }
+
+    .deck {
+      height: 100vh;
+      height: 100dvh;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(1rem, 4vw, 3rem) clamp(1.25rem, 5vw, 4rem);
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background: radial-gradient(ellipse 120% 80% at 20% 0%, var(--accent-dim), transparent 50%), var(--bg);
+    }
+    .slide.active { display: flex; }
+
+    h1 {
+      font-size: clamp(1.75rem, 4.5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.5rem;
+      line-height: 1.1;
+    }
+    h2 {
+      font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+      font-weight: 600;
+      color: var(--accent);
+      margin: 0 0 1rem;
+    }
+    p, li {
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      line-height: 1.55;
+      color: var(--muted);
+      max-width: 42rem;
+      margin: 0 0 0.75rem;
+    }
+    ul {
+      margin: 0.5rem 0 0;
+      padding-left: 1.25rem;
+    }
+    li { margin-bottom: 0.4rem; color: var(--text); }
+    li strong { color: var(--accent); font-weight: 600; }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-top: 0.75rem;
+      max-width: 48rem;
+    }
+    pre {
+      margin: 0;
+      font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+      color: #c5d4e8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, monospace;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 52rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 700px) {
+      .row { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+    .card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      color: var(--text);
+    }
+    .card p { font-size: 0.9rem; margin: 0; }
+
+    nav.progress {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: linear-gradient(transparent, rgba(10, 14, 18, 0.95));
+      z-index: 10;
+    }
+    .progress-dots {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .progress-dots button {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: none;
+      background: var(--border);
+      cursor: pointer;
+      padding: 0;
+    }
+    .progress-dots button.on { background: var(--accent); }
+    .hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .slide { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" id="deck" aria-live="polite">
+    <section class="slide active" data-slide="0" aria-label="Title">
+      <span class="tag">Orca Coder</span>
+      <h1>Hermes + Orca</h1>
+      <p>Setup paths: <strong>bridge</strong> (HTTP tools) vs <strong>in-app Hermes tile</strong> (Responses API). This deck is a visual companion to <code>docs/hermes-orca-visual-setup.md</code>.</p>
+    </section>
+
+    <section class="slide" data-slide="1" aria-label="Two paths">
+      <h2>Two main paths</h2>
+      <div class="row">
+        <div class="card">
+          <h3>Bridge</h3>
+          <p>Hermes / Pi / OpenClaw calls <code>GET /api/canvas/tools</code> and <code>POST /api/canvas/execute</code>. Keep the Orca UI open so <code>uiClients ≥ 1</code>.</p>
+        </div>
+        <div class="card">
+          <h3>In-app tile</h3>
+          <p>Install <code>hermes</code> CLI, run <code>API_SERVER_ENABLED=true hermes gateway</code>, align Integrations base URL, add a <code>hermes_agent</code> tile.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="2" aria-label="CLI">
+      <h2>1 — Hermes CLI</h2>
+      <p>Install from NousResearch, then verify in a normal terminal:</p>
+      <div class="panel"><pre>hermes --version</pre></div>
+      <p>If this fails, fix PATH before relying on gateway autostart from Orca.</p>
+    </section>
+
+    <section class="slide" data-slide="3" aria-label="Gateway">
+      <h2>2 — Gateway</h2>
+      <div class="panel"><pre>API_SERVER_ENABLED=true hermes gateway</pre></div>
+      <p>Default API often listens on <code>127.0.0.1:8642</code>. Set <code>API_SERVER_KEY</code> in <code>~/.hermes/.env</code> if required; Orca can auto-read it when the Integrations key is empty.</p>
+    </section>
+
+    <section class="slide" data-slide="4" aria-label="Orca settings">
+      <h2>3 — Orca settings</h2>
+      <ul>
+        <li><strong>Integrations → Hermes API</strong> — base URL, model, optional key override.</li>
+        <li><strong>Agent → Hermes</strong> — show Hermes tile in menus; use <strong>Run diagnose</strong> if things break.</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-slide="5" aria-label="Bridge verify">
+      <h2>Bridge smoke</h2>
+      <div class="panel"><pre>curl -s http://127.0.0.1:3001/api/canvas/bridge-status</pre></div>
+      <p>Expect <code>uiClients</code> ≥ 1 with the app window open. Add <code>Authorization: Bearer …</code> when <code>CANVAS_BRIDGE_TOKEN</code> is set.</p>
+    </section>
+
+    <section class="slide" data-slide="6" aria-label="Skills">
+      <h2>Skills from Orca repo</h2>
+      <div class="panel"><pre>npm run hermes:install-skills</pre></div>
+      <p>Optional: <code>HERMES_SKILLS_DIR=…</code> for a non-default Hermes skills directory.</p>
+    </section>
+
+    <section class="slide" data-slide="7" aria-label="Troubleshoot">
+      <h2>When something breaks</h2>
+      <ul>
+        <li>Orchestrator tool: <code>diagnose_hermes_setup</code></li>
+        <li>Settings: <strong>Run diagnose</strong> under Agent → Hermes</li>
+        <li>Turn off <strong>Show Hermes agent tile</strong> if you do not use Hermes — fewer confusing tool offers.</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-slide="8" aria-label="Docs">
+      <h2>Full documentation</h2>
+      <ul>
+        <li><code>docs/hermes-orca-visual-setup.md</code> — tutorials, tables, mermaid</li>
+        <li><code>docs/CANVAS_AGENT_BRIDGE.md</code> — HTTP contract</li>
+        <li><code>docs/AGENT_ORCHESTRATOR_SYNC.md</code> — external orchestrator discovery</li>
+      </ul>
+      <p class="hint">Arrow keys ← → to navigate · Esc does nothing</p>
+    </section>
+  </main>
+
+  <nav class="progress" aria-label="Slide navigation">
+    <div class="progress-dots" id="dots"></div>
+    <span class="hint" id="counter">1 / 9</span>
+  </nav>
+
+  <script>
+    (function () {
+      var slides = [].slice.call(document.querySelectorAll(".slide"));
+      var i = 0;
+      var dots = document.getElementById("dots");
+      var counter = document.getElementById("counter");
+
+      slides.forEach(function (_, idx) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("aria-label", "Go to slide " + (idx + 1));
+        b.addEventListener("click", function () { go(idx); });
+        dots.appendChild(b);
+      });
+
+      function go(n) {
+        i = Math.max(0, Math.min(slides.length - 1, n));
+        slides.forEach(function (s, j) {
+          s.classList.toggle("active", j === i);
+        });
+        [].forEach.call(dots.children, function (d, j) {
+          d.classList.toggle("on", j === i);
+        });
+        counter.textContent = i + 1 + " / " + slides.length;
+      }
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(i + 1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(i - 1);
+        }
+      });
+
+      go(0);
+    })();
+  </script>
+</body>
+</html>

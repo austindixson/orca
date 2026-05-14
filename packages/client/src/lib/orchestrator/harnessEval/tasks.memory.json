@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "split": "memory",
+  "tasks": [
+    {
+      "id": "mem_error_context",
+      "kind": "memory_recurring_gate",
+      "signalKind": "error",
+      "detailPrefix": "context_limit"
+    },
+    {
+      "id": "mem_stagnation_loop",
+      "kind": "memory_recurring_gate",
+      "signalKind": "stagnation",
+      "detailPrefix": "repeated_tool"
+    },
+    {
+      "id": "mem_inspect_hard",
+      "kind": "memory_recurring_gate",
+      "signalKind": "inspect",
+      "detailPrefix": "hard failure"
+    }
+  ]
+}

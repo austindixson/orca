@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "split": "test",
+  "tasks": [
+    { "id": "execution_contract_merge", "kind": "execution_contract_merge" },
+    { "id": "tool_filter_smoke", "kind": "tool_filter_smoke" }
+  ]
+}

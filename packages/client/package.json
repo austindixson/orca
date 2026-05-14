@@ -1,0 +1,53 @@
+{
+  "name": "@agent-canvas/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "harness:eval": "node --import tsx/esm src/lib/orchestrator/harnessEval/cli.ts",
+    "test": "NODE_ENV=test c8 node --import ./src/test/registerSvgStub.mjs --import ./src/test/registerLocalStorage.mjs --import tsx/esm --test src/lib/orchestrator/codexWireModel.test.ts src/lib/orchestrator/activityLineParsing.test.ts src/lib/orchestrator/orchestratorMultiAgent.test.ts src/lib/orchestrator/orchestratorPromptTriage.test.ts src/lib/orchestrator/agentWriteStream.test.ts src/lib/orchestrator/stripAssistantToolArtifacts.test.ts src/lib/orchestrator/orchestratorToolFilter.test.ts src/lib/orchestrator/orchestratorEvalOptimizer.test.ts src/lib/orchestrator/orchestratorExecutionContract.test.ts src/lib/orchestrator/orchestratorSafetyGuard.test.ts src/lib/orchestrator/orchestratorErrorTaxonomy.test.ts src/lib/orchestrator/openrouterRateLimitFallback.test.ts src/lib/orchestrator/chatCompletion.zaiRateLimitFallback.test.ts src/lib/orchestrator/chatCompletion.fallback.integration.test.ts src/lib/orchestrator/chatCompletionBodyGuards.test.ts src/lib/orchestrator/bountySubAgentDelegation.test.ts src/lib/orchestrator/orchestratorHarnessOptimizer.test.ts src/lib/orchestrator/openaiResponsesAdapter.test.ts src/lib/orchestrator/prompts/messengerIntegrationsPrompt.test.ts src/lib/orchestrator/orchestratorArticulationPhase.test.ts src/store/settingsStore.test.ts src/lib/harness/bashValidation.test.ts src/lib/harness/compactionHierarchy.test.ts src/store/mergeReviewStore.test.ts src/lib/orchestrator/executeToolsWorktreePath.test.ts src/lib/orchestrator/waitForSubAgent.test.ts src/lib/orchestrator/orcaMemory.test.ts src/lib/orchestrator/orcaMemory.fileLoad.test.ts src/lib/orchestrator/orchestratorContextBudget.test.ts src/lib/orchestrator/memoryDistiller.test.ts src/lib/orchestrator/userProfileDistiller.test.ts src/lib/orchestrator/orchestratorSelfEvolution.test.ts src/lib/harness/harnessDiagnosticTrace.test.ts src/lib/orchestrator/harnessEval/evaluateHarnessSuite.test.ts src/lib/orchestrator/runOrchestrator.finalResponseGuard.test.ts src/lib/hermes/hermesApiKey.test.ts src/lib/hermes/hermesResponses.test.ts src/lib/hermes/hermesGatewayLauncher.test.ts src/lib/hermes/hermesServerTools.test.ts src/lib/terminal/terminalOutputSignals.test.ts src/lib/terminal/wrapShellCommand.test.ts src/lib/terminal/nonInteractiveCommands.test.ts src/lib/orchestrator/heuristicTelegramGatewayTilesIntent.test.ts src/lib/orchestrator/refocusOrchestratorOnTileClose.test.ts src/lib/orchestrator/orchestratorCanvasHudLines.test.ts src/lib/activeTimeline/buildActiveTimeline.test.ts src/lib/browserTileUrl.test.ts src/lib/openrouterPreflight.test.ts src/lib/agentIssueDetector.test.ts src/lib/tauri.agentBrowserSession.test.ts src/store/agentTaskStore.test.ts src/store/agentAvatarStore.test.ts src/components/tiles/DiffTile.test.ts src/components/tiles/__tests__/HermesAgentChatPanel.test.ts src/lib/vault/vaultBrainMirror.test.ts src/lib/vault/centralBrainMirror.test.ts src/lib/vault/vaultChatTranscript.test.ts src/lib/vault/searchWorkspaceMemory.test.ts src/lib/persistence/sessionCompaction.test.ts src/lib/telemetry/exportUnifiedTelemetryCsv.test.ts src/store/unifiedTelemetryStore.test.ts src/store/vaultMirrorDiagnosticsStore.test.ts src/components/tiles/agent-tile/agentOutputParse.test.ts src/store/bugBountyStore.test.ts src/lib/telemetry/tapTerminalOutput.test.ts src/lib/layout/repulsion.test.ts src/lib/layout/hierarchySpawn.test.ts src/lib/layout/forceSettle.test.ts src/lib/groupChat/parseMentions.test.ts src/lib/orchestrator/parseSubtasks.test.ts src/lib/orchestrator/delegationResumeGrounding.test.ts src/store/canvasStateParse.test.ts src/lib/orchestrator/subAgentRunnerLeadPrompt.test.ts src/store/groupChatEnvelope.test.ts src/store/groupChatDedupe.test.ts src/lib/orchestrator/teamChatRoundTrip.test.ts src/lib/activeEditorRegistry.test.ts src/lib/workspacePathUtils.test.ts src/lib/menuBridge.test.ts src/components/orchestrator/__tests__/OrchestratorPlanningDraftPanel.test.ts src/components/orchestrator/__tests__/OrchestratorTracePeekRows.test.ts src/components/ui/__tests__/TextShimmer.test.ts src/lib/orchestrator/agentBrowserTileResolve.test.ts src/components/orchestrator/orchestratorDiffLineStyle.test.ts src/lib/orchestrator/orchestratorToolReplyHealth.test.ts src/lib/orchestrator/orchestratorEmptyToolReplyRecovery.test.ts",
+    "test:orchestrator-matrix": "NODE_ENV=test c8 node --import tsx/esm --test src/lib/orchestrator/orchestratorMultiAgentRouting.matrix.test.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@monaco-editor/react": "^4.6.0",
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-http": "^2.5.8",
+    "@types/d3-force": "^3.0.10",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/addon-web-links": "^0.11.0",
+    "@xterm/xterm": "^5.5.0",
+    "c8": "^10.1.2",
+    "clsx": "^2.1.1",
+    "d3-force": "^3.0.0",
+    "driver.js": "^1.3.1",
+    "force-graph": "^1.51.4",
+    "nanoid": "^5.0.7",
+    "openai": "^4.52.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
+    "react-qr-code": "^2.0.18",
+    "remark-gfm": "^4.0.1",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^20.19.39",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1"
+  }
+}

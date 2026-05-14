@@ -1,0 +1,176 @@
+{
+  "intent": {
+    "query": "Post this on X about our release notes and publish the tweet now.",
+    "catalogId": "hermes-any-app-workflows",
+    "matchedWorkflows": [
+      {
+        "id": "x-post-update",
+        "title": "Post a product update on X",
+        "pack": "x-social-ops",
+        "risk": "mutating",
+        "score": 5.65,
+        "commands": [
+          "x.compose.open",
+          "x.tweet.send"
+        ],
+        "requiredSlots": [
+          "text"
+        ],
+        "optionalSlots": [
+          "reply_to_id",
+          "media_paths"
+        ],
+        "approvalRequired": false,
+        "target": {
+          "type": "browser_ui",
+          "app": "x",
+          "domain": "x.com"
+        }
+      },
+      {
+        "id": "cms-publish-draft-from-folder",
+        "title": "Publish blog draft from docs folder",
+        "pack": "cms-publisher",
+        "risk": "mutating",
+        "score": 3.85,
+        "commands": [
+          "local.glob.read",
+          "cms.post.create_draft"
+        ],
+        "requiredSlots": [
+          "glob_pattern"
+        ],
+        "optionalSlots": [
+          "author",
+          "tags"
+        ],
+        "approvalRequired": false,
+        "target": {
+          "type": "hybrid",
+          "app": "cms_local",
+          "domain": "cms"
+        }
+      },
+      {
+        "id": "release-checklist-status-post",
+        "title": "Release checklist runner",
+        "pack": "release-ops",
+        "risk": "mutating",
+        "score": 3.65,
+        "commands": [
+          "repo.checks.run",
+          "ci.status.read",
+          "slack.message.send"
+        ],
+        "requiredSlots": [
+          "release_tag",
+          "slack_channel"
+        ],
+        "optionalSlots": [
+          "checklist_path"
+        ],
+        "approvalRequired": false,
+        "target": {
+          "type": "hybrid",
+          "app": "repo_ci_slack",
+          "domain": "app.slack.com"
+        }
+      }
+    ],
+    "combinedCommands": [
+      "x.compose.open",
+      "x.tweet.send",
+      "local.glob.read",
+      "cms.post.create_draft",
+      "repo.checks.run",
+      "ci.status.read",
+      "slack.message.send"
+    ],
+    "authLanePlan": {
+      "requiredLanes": [
+        "browser_session"
+      ],
+      "oauthHealthChecks": [
+        "token_valid",
+        "scope_sufficient",
+        "api_reachable"
+      ],
+      "browserSessionHealthChecks": [
+        "domain_binding_valid",
+        "bundle_decryptable",
+        "auth_active",
+        "ttl_valid"
+      ],
+      "fallbackBounded": true,
+      "perWorkflow": [
+        {
+          "workflowId": "x-post-update",
+          "pack": "x-social-ops",
+          "risk": "mutating",
+          "approvalRequired": false,
+          "commandRoutes": [
+            {
+              "command": "x.compose.open",
+              "lane": "browser_session",
+              "laneReason": "auth_profile:x-browser-session;match:pack",
+              "authProfileId": "x-browser-session"
+            },
+            {
+              "command": "x.tweet.send",
+              "lane": "browser_session",
+              "laneReason": "auth_profile:x-browser-session;match:pack",
+              "authProfileId": "x-browser-session"
+            }
+          ]
+        },
+        {
+          "workflowId": "cms-publish-draft-from-folder",
+          "pack": "cms-publisher",
+          "risk": "mutating",
+          "approvalRequired": false,
+          "commandRoutes": [
+            {
+              "command": "local.glob.read",
+              "lane": "per_step",
+              "laneReason": "target_type:hybrid",
+              "authProfileId": null
+            },
+            {
+              "command": "cms.post.create_draft",
+              "lane": "per_step",
+              "laneReason": "target_type:hybrid",
+              "authProfileId": null
+            }
+          ]
+        },
+        {
+          "workflowId": "release-checklist-status-post",
+          "pack": "release-ops",
+          "risk": "mutating",
+          "approvalRequired": false,
+          "commandRoutes": [
+            {
+              "command": "repo.checks.run",
+              "lane": "per_step",
+              "laneReason": "target_type:hybrid",
+              "authProfileId": null
+            },
+            {
+              "command": "ci.status.read",
+              "lane": "per_step",
+              "laneReason": "target_type:hybrid",
+              "authProfileId": null
+            },
+            {
+              "command": "slack.message.send",
+              "lane": "per_step",
+              "laneReason": "target_type:hybrid",
+              "authProfileId": null
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": "Workflow catalog matches (hermes-any-app-workflows)\n1. Post a product update on X [x-social-ops] risk=mutating score=5.65\n   commands: x.compose.open -> x.tweet.send\n   required slots: text; optional slots: reply_to_id, media_paths; approval: standard mutating policy\n   auth lanes: x.compose.open:browser_session (auth_profile:x-browser-session;match:pack profile=x-browser-session), x.tweet.send:browser_session (auth_profile:x-browser-session;match:pack profile=x-browser-session)\n2. Publish blog draft from docs folder [cms-publisher] risk=mutating score=3.85\n   commands: local.glob.read -> cms.post.create_draft\n   required slots: glob_pattern; optional slots: author, tags; approval: standard mutating policy\n   auth lanes: local.glob.read:per_step (target_type:hybrid), cms.post.create_draft:per_step (target_type:hybrid)\n3. Release checklist runner [release-ops] risk=mutating score=3.65\n   commands: repo.checks.run -> ci.status.read -> slack.message.send\n   required slots: release_tag, slack_channel; optional slots: checklist_path; approval: standard mutating policy\n   auth lanes: repo.checks.run:per_step (target_type:hybrid), ci.status.read:per_step (target_type:hybrid), slack.message.send:per_step (target_type:hybrid)\nAuth lanes required: browser_session\nOAuth preflight: token_valid, scope_sufficient, api_reachable\nBrowser-session preflight: domain_binding_valid, bundle_decryptable, auth_active, ttl_valid\nHybrid fallback bounded: yes"
+}

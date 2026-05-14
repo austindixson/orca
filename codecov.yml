@@ -1,0 +1,37 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        base: auto
+        threshold: 1%
+        informational: true
+    patch:
+      default:
+        target: auto
+        base: auto
+        threshold: 1%
+        informational: true
+
+ignore:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "src/test/**"
+  - "dist/**"
+  - "target/**"
+  - "node_modules/**"
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false
+  require_base: yes
+  require_head: yes
+  branches:
+    - "main"
+    - "develop"
+
+github_checks:
+  annotations: true

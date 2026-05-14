@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "split": "proactive",
+  "tasks": [
+    { "id": "heartbeat_synthetic_shape", "kind": "heartbeat_synthetic_message_marker" },
+    { "id": "autonomy_broad_red_lines", "kind": "autonomy_constitution_broad_gates" },
+    { "id": "autonomy_standard_confirm", "kind": "autonomy_constitution_standard_confirm" },
+    { "id": "terminal_wrap_osc133_footer", "kind": "terminal_wrap_shell_markers" },
+    { "id": "terminal_argv_create_next_app_cap_dir", "kind": "terminal_argv_quoting_noglob" },
+    { "id": "terminal_strip_bracketed_paste_wrappers", "kind": "terminal_strip_bracketed_paste" },
+    { "id": "tool_allowlist_last_terminal_and_wait", "kind": "orchestrator_tool_allowlist_terminal_command_tools" }
+  ]
+}
