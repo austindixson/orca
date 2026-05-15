@@ -136,6 +136,14 @@ fn build_file_menu(
             &MenuItem::with_id(app, "file.open-folder", "Open Folder…", true, None::<&str>)?,
             &recent_empty,
             &PredefinedMenuItem::separator(app)?,
+            &MenuItem::with_id(
+                app,
+                "file.settings",
+                "Settings…",
+                true,
+                Some("CmdOrCtrl+,"),
+            )?,
+            &PredefinedMenuItem::separator(app)?,
             &MenuItem::with_id(app, "file.save", "Save", true, Some("CmdOrCtrl+S"))?,
             &MenuItem::with_id(
                 app,

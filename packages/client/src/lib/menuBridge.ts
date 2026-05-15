@@ -121,6 +121,10 @@ export async function dispatchOrcaMenuPayload(payload: OrcaMenuPayload): Promise
       await useWorkspaceStore.getState().returnToWelcome()
       return
     }
+    case 'file.settings': {
+      useSettingsStore.getState().openSettingsToSection('models')
+      return
+    }
     case 'edit.find':
       getActiveEditor()?.runMonacoAction('actions.find')
       return
