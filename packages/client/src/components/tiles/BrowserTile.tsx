@@ -70,7 +70,7 @@ export function BrowserTile({ data }: TileComponentProps) {
   }, [data.title])
 
   const loadFilePreview = useCallback(async (filePath: string) => {
-    if (!filePath || !tauri.isTauri()) return
+    if (!filePath) return
     if (filePath === lastLoadedFilePathRef.current && previewReloadGen === lastLoadedReloadGenRef.current) return
 
     setPreviewState('loading')
@@ -125,7 +125,9 @@ export function BrowserTile({ data }: TileComponentProps) {
     ackMount()
   }, [ackMount])
 
+  // Sync URL from tile meta — but only when it has an explicit URL, not when using file preview
   useEffect(() => {
+    if (blobUrlRef.current && lastLoadedFilePathRef.current) return
     const nextUrl = readTileUrl(data.meta)
     setUrl(nextUrl)
     setInputUrl(nextUrl)

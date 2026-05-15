@@ -1868,17 +1868,16 @@ export async function executeOrchestratorTool(
         return text
       }
       case 'canvas_create_tile': {
-        const requestedType = args.type as string
-        const type = requestedType === 'browser' ? 'agent_browser' : requestedType
+        const type = args.type as string
         if (
-          requestedType === 'hermes_agent' &&
+          type === 'hermes_agent' &&
           useSettingsStore.getState().showHermesAgentTile !== true
         ) {
           return jsonErr(
             'Hermes agent tiles are off in Settings → Agent → Hermes (Show Hermes agent tile). Enable there to create Hermes modules, or use type "agent" for standard agent tiles.'
           )
         }
-        if (!TILE_TYPES.has(requestedType as TileType)) {
+        if (!TILE_TYPES.has(type as TileType)) {
           return jsonErr(`type must be one of: ${[...TILE_TYPES].join(', ')}`)
         }
         const parsedMetaFromArg = (() => {
@@ -1895,7 +1894,7 @@ export async function executeOrchestratorTool(
                   'H11',
                   'executeTools.ts:970',
                   'Coerced string meta JSON for canvas_create_tile',
-                  { type: requestedType, title: typeof args.title === 'string' ? args.title : null }
+                  { type: type, title: typeof args.title === 'string' ? args.title : null }
                 )
                 // #endregion
                 return parsed as Record<string, unknown>
@@ -1907,7 +1906,7 @@ export async function executeOrchestratorTool(
                 'H11',
                 'executeTools.ts:982',
                 'Failed to parse string meta JSON for canvas_create_tile',
-                { type: requestedType, metaPreview: args.meta.slice(0, 180) }
+                { type: type, metaPreview: args.meta.slice(0, 180) }
               )
               // #endregion
             }
@@ -1916,7 +1915,7 @@ export async function executeOrchestratorTool(
         })()
 
         // GitHub tiles require Tauri desktop app - provide helpful alternatives for web users
-        if (requestedType === 'github' && !tauri.isTauri()) {
+        if (type === 'github' && !tauri.isTauri()) {
           const meta = parsedMetaFromArg ?? {}
           const ghCommand = typeof meta.ghArgs === 'string' ? meta.ghArgs : 'repo list'
           return jsonErr(
@@ -1933,7 +1932,7 @@ export async function executeOrchestratorTool(
         const title = args.title !== undefined ? String(args.title) : undefined
         const meta = parsedMetaFromArg
         let reuseManagedBrowserTileId: string | null = null
-        if (requestedType === 'browser') {
+        if (type === 'browser') {
           const requestedUrl =
             meta && typeof meta.url === 'string' && meta.url.trim()
               ? meta.url.trim()
@@ -2020,7 +2019,7 @@ export async function executeOrchestratorTool(
           const gate = applySafetyMode(mode, scan)
           if (!gate.allow) return jsonErr(gate.message ?? 'blocked')
         }
-        if (requestedType === 'browser' && reuseManagedBrowserTileId) {
+        if (type === 'browser' && reuseManagedBrowserTileId) {
           const workspaceKey = getTasksPersistenceKey(useWorkspaceStore.getState().rootPath)
           const existing = useCanvasStore.getState().tiles.get(reuseManagedBrowserTileId)
           useCanvasStore.getState().updateTile(reuseManagedBrowserTileId, {
@@ -2089,7 +2088,7 @@ export async function executeOrchestratorTool(
               recordOrchestratorToolOnModule(orchId, name, {
                 ...args,
                 tile_id: id,
-                aliased_from: requestedType === 'browser' ? 'browser' : undefined,
+
                 navigated_url: validatedCreateUrl,
                 snapshot_length: snapshot.length,
               })
@@ -2105,7 +2104,7 @@ export async function executeOrchestratorTool(
                 tile_id: id,
                 type,
                 title: title ?? null,
-                aliased_from: requestedType === 'browser' ? 'browser' : undefined,
+
                 url: validatedCreateUrl,
               })
             } catch (e) {
@@ -2126,13 +2125,13 @@ export async function executeOrchestratorTool(
         recordOrchestratorToolOnModule(orchId, name, {
           ...args,
           tile_id: id,
-          aliased_from: requestedType === 'browser' ? 'browser' : undefined,
+          aliased_from: type === 'browser' ? 'browser' : undefined,
         })
         return jsonOk({
           tile_id: id,
           type,
           title: title ?? null,
-          aliased_from: requestedType === 'browser' ? 'browser' : undefined,
+          aliased_from: type === 'browser' ? 'browser' : undefined,
         })
       }
       case 'canvas_update_tile': {
