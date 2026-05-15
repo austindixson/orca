@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TileComponentProps } from '../Canvas/TileRegistry'
 import { useCanvasStore } from '../../store/canvasStore'
 import { useToastStore } from '../../store/toastStore'
@@ -16,6 +16,35 @@ function readTileUrl(meta: Record<string, unknown> | undefined): string {
   return ''
 }
 
+function readPreviewFilePath(meta: Record<string, unknown> | undefined): string {
+  return typeof meta?.previewFilePath === 'string' ? meta.previewFilePath.trim() : ''
+}
+
+function readPreviewReloadGen(meta: Record<string, unknown> | undefined): number {
+  return typeof meta?.previewReloadGeneration === 'number' ? meta.previewReloadGeneration : 0
+}
+
+function getFileMimeType(filePath: string): string {
+  const ext = filePath.split('.').pop()?.toLowerCase() ?? ''
+  const mimeMap: Record<string, string> = {
+    html: 'text/html',
+    htm: 'text/html',
+    css: 'text/css',
+    js: 'text/javascript',
+    mjs: 'text/javascript',
+    json: 'application/json',
+    svg: 'image/svg+xml',
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    txt: 'text/plain',
+    md: 'text/plain',
+  }
+  return mimeMap[ext] ?? 'text/plain'
+}
+
 export function BrowserTile({ data }: TileComponentProps) {
   const ackMount = useTileMountAck(data.id)
   const updateTile = useCanvasStore((s) => s.updateTile)
@@ -26,13 +55,71 @@ export function BrowserTile({ data }: TileComponentProps) {
   const [renderMode, setRenderMode] = useState<'tile' | 'native'>('tile')
   const destroyListenerRef = useRef<(() => void) | null>(null)
   const fallbackAttemptedUrlRef = useRef<string | null>(null)
+  const blobUrlRef = useRef<string | null>(null)
+  const lastLoadedFilePathRef = useRef<string>('')
+  const lastLoadedReloadGenRef = useRef<number>(0)
 
   const toast = useToastStore((s) => s.addToast)
+
+  const previewFilePath = useMemo(() => readPreviewFilePath(data.meta), [data.meta])
+  const previewReloadGen = useMemo(() => readPreviewReloadGen(data.meta), [data.meta])
 
   const title = useMemo(() => {
     const trimmed = typeof data.title === 'string' ? data.title.trim() : ''
     return trimmed || 'Browser'
   }, [data.title])
+
+  const loadFilePreview = useCallback(async (filePath: string) => {
+    if (!filePath || !tauri.isTauri()) return
+    if (filePath === lastLoadedFilePathRef.current && previewReloadGen === lastLoadedReloadGenRef.current) return
+
+    setPreviewState('loading')
+    setLastError(null)
+    try {
+      const content = await tauri.readFile(filePath)
+      const mimeType = getFileMimeType(filePath)
+      const blob = new Blob([content], { type: mimeType })
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current)
+      }
+      const blobUrl = URL.createObjectURL(blob)
+      blobUrlRef.current = blobUrl
+      lastLoadedFilePathRef.current = filePath
+      lastLoadedReloadGenRef.current = previewReloadGen
+      setUrl(blobUrl)
+      setInputUrl(filePath)
+      setRenderMode('tile')
+      setPreviewState('open')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      setLastError(msg)
+      setPreviewState('error')
+    }
+  }, [previewReloadGen])
+
+  // Auto-load preview when file path is set on mount or changes
+  useEffect(() => {
+    if (previewFilePath && previewState === 'closed') {
+      void loadFilePreview(previewFilePath)
+    }
+  }, [previewFilePath, previewReloadGen])
+
+  // Reload when reload generation bumps
+  useEffect(() => {
+    if (previewFilePath && previewReloadGen !== lastLoadedReloadGenRef.current && lastLoadedFilePathRef.current) {
+      void loadFilePreview(previewFilePath)
+    }
+  }, [previewReloadGen, previewFilePath, loadFilePreview])
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current)
+        blobUrlRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     ackMount()

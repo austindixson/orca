@@ -760,11 +760,13 @@ function ensureDiffTile(sourceSessionTileId: string | null): string {
 type WebPreviewOptions = {
   /** Optional browser tile title (e.g. "Architecture" for ARCHITECTURE.html). */
   previewTitle?: string
+  /** Absolute file path to preview in the browser tile. */
+  previewFilePath?: string
 }
 
 function findManagedWebPreviewTileId(workspaceKey: string): string | null {
   for (const [id, t] of useCanvasStore.getState().tiles) {
-    if (t.type !== 'browser' && t.type !== 'agent_browser') continue
+    if (t.type !== 'browser') continue
     if (t.meta?.source !== 'orchestrator-auto') continue
     if (t.meta?.previewRole !== ORCA_WEB_PREVIEW_ROLE) continue
     if (t.meta?.workspaceRootKey !== workspaceKey) continue
@@ -774,19 +776,18 @@ function findManagedWebPreviewTileId(workspaceKey: string): string | null {
 }
 
 /**
- * Legacy auto-preview tiles had `source: orchestrator-auto` but no workspace scope.
- * Upgrade at most one such tile so we keep a single managed preview per session.
+ * Legacy auto-preview tiles had `source: orchestrator-auto` but no workspace scope, or were
+ * upgraded to `agent_browser`. Normalise them to plain `browser` tiles with workspace scope.
  */
 function upgradeLegacyOrchestratorPreviewTile(workspaceKey: string): string | null {
   for (const [id, t] of useCanvasStore.getState().tiles) {
-    if (t.type !== 'browser') continue
+    if (t.type !== 'browser' && t.type !== 'agent_browser') continue
     if (t.meta?.source !== 'orchestrator-auto') continue
-    if (t.meta?.previewRole) continue
-    if (t.meta?.workspaceRootKey) continue
+    if (t.meta?.previewRole && t.meta?.workspaceRootKey) continue
     useCanvasStore.getState().updateTile(id, {
-      type: 'agent_browser',
+      type: 'browser',
       meta: {
-        ...t.meta,
+        ...(t.meta as Record<string, unknown>),
         previewRole: ORCA_WEB_PREVIEW_ROLE,
         workspaceRootKey: workspaceKey,
       },
@@ -801,6 +802,7 @@ function ensureBrowserTileForWebPreview(
   opts?: WebPreviewOptions
 ): string {
   const previewTitle = opts?.previewTitle?.trim()
+  const previewFilePath = opts?.previewFilePath?.trim()
   const workspaceKey = getTasksPersistenceKey(useWorkspaceStore.getState().rootPath)
 
   let existingId = findManagedWebPreviewTileId(workspaceKey)
@@ -810,16 +812,18 @@ function ensureBrowserTileForWebPreview(
 
   if (existingId) {
     const existing = useCanvasStore.getState().tiles.get(existingId)
-    if (existing && previewTitle) {
-      useCanvasStore.getState().updateTile(existingId, {
-        title: previewTitle,
-        meta: {
-          ...existing.meta,
-          source: 'orchestrator-auto',
-          previewRole: ORCA_WEB_PREVIEW_ROLE,
-          workspaceRootKey: workspaceKey,
-        },
-      })
+    if (existing) {
+      const update: Record<string, unknown> = {}
+      if (previewTitle) update.title = previewTitle
+      const meta: Record<string, unknown> = {
+        ...((existing.meta as Record<string, unknown>) ?? {}),
+        source: 'orchestrator-auto',
+        previewRole: ORCA_WEB_PREVIEW_ROLE,
+        workspaceRootKey: workspaceKey,
+      }
+      if (previewFilePath) meta.previewFilePath = previewFilePath
+      update.meta = meta
+      useCanvasStore.getState().updateTile(existingId, update as any)
     }
     revealOrchestratorTile(
       existingId,
@@ -831,16 +835,17 @@ function ensureBrowserTileForWebPreview(
     )
     return existingId
   }
-  const id = useCanvasStore.getState().addTileIntelligent('agent_browser')
+  const id = useCanvasStore.getState().addTileIntelligent('browser')
   useCanvasStore.getState().updateTile(id, {
     title: previewTitle ?? 'Preview',
     meta: {
       source: 'orchestrator-auto',
       previewRole: ORCA_WEB_PREVIEW_ROLE,
       workspaceRootKey: workspaceKey,
+      ...(previewFilePath ? { previewFilePath } : {}),
     },
   })
-  revealOrchestratorTile(id, { label: 'Opening preview…', effect: 'pulse' }, sourceSessionTileId)
+  revealOrchestratorTile(id, { label: 'Opening preview…', effect: 'pulse' }, sourceSessionTileId, { preferFit: true })
   return id
 }
 
@@ -1269,8 +1274,11 @@ export async function executeOrchestratorTool(
           let webPreviewOpts: WebPreviewOptions | undefined
           if (ext === 'html' || ext === 'htm') {
             const base = path.split(/[/\\]/).pop() ?? path
+            const rootPath = useWorkspaceStore.getState().rootPath
+            const absPath = rootPath ? `${rootPath}/${path}` : path
+            webPreviewOpts = { previewFilePath: absPath }
             if (/^ARCHITECTURE\.html$/i.test(base)) {
-              webPreviewOpts = { previewTitle: 'Architecture' }
+              webPreviewOpts.previewTitle = 'Architecture'
             }
           }
           ensureBrowserTileForWebPreview(orchId, webPreviewOpts)
