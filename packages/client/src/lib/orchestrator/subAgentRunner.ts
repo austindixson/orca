@@ -295,9 +295,9 @@ async function runDelegatedSubAgent(
   const selectedId = settings.selectedModel
 
   // Hermes runner: pin the worker to the Hermes gateway regardless of orchestrator selection.
-  let selected: ModelConfig
-  let primary: ModelConfig
-  let routingLog: string
+  let selected: ModelConfig | undefined
+  let primary: ModelConfig | undefined
+  let routingLog = ''
 
   if (runner === 'hermes') {
     const hermesModelName = settings.hermesModel.trim() || HERMES_API_DEFAULT_MODEL
@@ -309,7 +309,8 @@ async function runDelegatedSubAgent(
       supportsTools: true,
     }
 
-    // Pre-flight probe — no free-router fallback on Hermes workers.
+    // Pre-flight probe with fallback to default routing on failure.
+    let hermesOk = false
     try {
       const providerCfg = settings.providers.hermes
       const baseRaw = providerCfg?.baseUrl
@@ -319,29 +320,12 @@ async function runDelegatedSubAgent(
         typeof keyRaw === 'string' ? keyRaw : undefined,
         signal
       )
-      if (!probe.ok) {
-        const err = `Hermes gateway unreachable (${probe.status || 'network'}): ${probe.hint}`
-        team.appendAgentLog(tileId, `[Hermes] Probe failed: ${err}\n`)
-        team.patchMember(tileId, {
-          status: 'error',
-          currentTask: 'Hermes unreachable',
-          error: err,
-        })
-        useCanvasStore.getState().updateTile(tileId, { tileStatus: 'error' })
-        useOrchestratorSessionStore.getState().recordSubAgentHandoff({
-          displayName,
-          role,
-          tileId,
-          outcome: 'error',
-          error: err,
-        })
-        useAgentTaskStore.getState().finishTask(tileId, 'error', err)
-        clearLinkedTodoEarly()
-        clearSubAgentStartupTimeout()
-        return
+      if (probe.ok) {
+        hermesOk = true
+      } else {
+        team.appendAgentLog(tileId, `[Hermes] Gateway unreachable (${probe.status}): ${probe.hint}. Falling back to default routing.\n`)
       }
     } catch (e) {
-      const err = e instanceof Error ? e.message : String(e)
       if (signal.aborted) {
         clearSubAgentStartupTimeout()
         if (startupGuard.timedOut) return
@@ -351,29 +335,18 @@ async function runDelegatedSubAgent(
         clearLinkedTodoEarly()
         return
       }
-      team.patchMember(tileId, {
-        status: 'error',
-        currentTask: 'Hermes probe error',
-        error: err,
-      })
-      useCanvasStore.getState().updateTile(tileId, { tileStatus: 'error' })
-      useOrchestratorSessionStore.getState().recordSubAgentHandoff({
-        displayName,
-        role,
-        tileId,
-        outcome: 'error',
-        error: err,
-      })
-      useAgentTaskStore.getState().finishTask(tileId, 'error', err)
-      clearLinkedTodoEarly()
-      clearSubAgentStartupTimeout()
-      return
+      const err = e instanceof Error ? e.message : String(e)
+      team.appendAgentLog(tileId, `[Hermes] Probe error: ${err}. Falling back to default routing.\n`)
     }
 
-    selected = hermesModel
-    primary = hermesModel
-    routingLog = `[Routing] runner="hermes" → forcing Hermes gateway (${hermesModelName}); OpenRouter fallback disabled.`
-  } else {
+    if (hermesOk) {
+      selected = hermesModel
+      primary = hermesModel
+      routingLog = `[Routing] runner="hermes" → forcing Hermes gateway (${hermesModelName}); OpenRouter fallback disabled.`
+    }
+    // If hermesOk is false, fall through to default runner below.
+  }
+  if (runner !== 'hermes' || !selected) {
     const maybePrimary = models.find((m) => m.id === selectedId) ?? models[0]
     if (!maybePrimary) {
       const err = 'No model selected in Settings.'
@@ -427,6 +400,16 @@ async function runDelegatedSubAgent(
     if (startupGuard.timedOut) return
   }
   if (startupGuard.timedOut) return
+  if (!selected) {
+    const err = 'Failed to resolve a model for this task.'
+    team.patchMember(tileId, { status: 'error', currentTask: 'No model', error: err })
+    useCanvasStore.getState().updateTile(tileId, { tileStatus: 'error' })
+    useOrchestratorSessionStore.getState().recordSubAgentHandoff({ displayName, role, tileId, outcome: 'error', error: err })
+    useAgentTaskStore.getState().finishTask(tileId, 'error', err)
+    clearLinkedTodoEarly()
+    clearSubAgentStartupTimeout()
+    return
+  }
   team.patchMember(tileId, { currentTask: 'Model resolved…' })
   if (!providerSupportsOrchestratorTools(selected.provider) || selected.supportsTools === false) {
     const err = 'Pick a tools-capable model in Settings.'
@@ -450,7 +433,7 @@ async function runDelegatedSubAgent(
   }
 
 
-  async function resolveKeyAndBaseFor(exec: typeof selected) {
+  async function resolveKeyAndBaseFor(exec: ModelConfig) {
     const providerConfig = settings.providers[exec.provider]
     const apiKey = await resolveApiKey(exec.provider, providerConfig.apiKey)
     if (!apiKey && PROVIDER_INFO[exec.provider].requiresKey) {
@@ -649,7 +632,7 @@ When finished, end with a short plain-text summary (no JSON).`
     if (startupGuard.timedOut) return
     const userMessageWithEnv = `${envSnap}\n\n${graphBlock}${userMessage}`
 
-    const runWithSelectedModel = async (exec: typeof selected) => {
+    const runWithSelectedModel = async (exec: ModelConfig) => {
       // #region agent log
       emitDebugLog(runId, 'H5', 'subAgentRunner.ts:513', 'Sub-agent model execution started', {
         tileId,
@@ -719,16 +702,16 @@ When finished, end with a short plain-text summary (no JSON).`
       if (runner === 'hermes') {
         throw firstErr
       }
-      if (!shouldAttemptSubAgentFreeRouterFallback(selected, primary, firstErr)) {
+      if (!shouldAttemptSubAgentFreeRouterFallback(selected!, primary!, firstErr)) {
         throw firstErr
       }
 
       const hint = firstErr instanceof Error ? firstErr.message : String(firstErr)
       team.appendAgentLog(
         tileId,
-        `[Routing] Retrying once with ${primary.displayName} (${primary.name}) — free/OpenRouter path failed: ${hint.slice(0, 320)}${hint.length > 320 ? '…' : ''}\n`
+        `[Routing] Retrying once with ${primary!.displayName} (${primary!.name}) — free/OpenRouter path failed: ${hint.slice(0, 320)}${hint.length > 320 ? '…' : ''}\n`
       )
-      selected = primary
+      selected = primary!
       try {
         const kb = await resolveKeyAndBaseFor(selected)
         apiKey = kb.apiKey

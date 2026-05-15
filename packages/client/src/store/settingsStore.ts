@@ -697,7 +697,12 @@ export const DEFAULT_MODELS: ModelConfig[] = [
   { id: 'gpt-4-turbo', provider: 'openai', name: 'gpt-4-turbo', displayName: 'GPT-4 Turbo', supportsImages: true, supportsTools: true },
   { id: OPENAI_CODEX_DEFAULT_MODEL_ID, provider: 'openaiCodex', name: 'gpt-5.4', displayName: 'GPT-5.4 (Codex)', supportsImages: true, supportsTools: true },
   { id: 'codex-gpt-5.4-mini', provider: 'openaiCodex', name: 'gpt-5.4-mini', displayName: 'GPT-5.4 Mini (Codex)', supportsImages: true, supportsTools: true },
+  { id: 'codex-gpt-5.4-nano', provider: 'openaiCodex', name: 'gpt-5.4-nano', displayName: 'GPT-5.4 Nano (Codex)', supportsImages: true, supportsTools: true },
   { id: 'codex-gpt-5.2', provider: 'openaiCodex', name: 'gpt-5.2', displayName: 'GPT-5.2 (Codex)', supportsImages: true, supportsTools: true },
+  { id: 'codex-gpt-5', provider: 'openaiCodex', name: 'gpt-5', displayName: 'GPT-5 (Codex)', supportsImages: true, supportsTools: true },
+  { id: 'codex-gpt-4o', provider: 'openaiCodex', name: 'gpt-4o', displayName: 'GPT-4o (Codex)', supportsImages: true, supportsTools: true },
+  { id: 'codex-o3', provider: 'openaiCodex', name: 'o3', displayName: 'o3 (Codex)', supportsImages: true, supportsTools: true },
+  { id: 'codex-o4-mini', provider: 'openaiCodex', name: 'o4-mini', displayName: 'o4 Mini (Codex)', supportsImages: true, supportsTools: true },
   {
     id: 'claude-3-5-sonnet',
     provider: 'anthropic',
@@ -2282,6 +2287,12 @@ export const useSettingsStore = create<SettingsState>()(
                   enabled: true,
                 }
               }
+              if (!nextProviders.openai.enabled) {
+                nextProviders.openai = {
+                  ...nextProviders.openai,
+                  enabled: true,
+                }
+              }
               if (
                 !selectedModel ||
                 (selectedModel.startsWith('codex-') && !DEFAULT_MODELS.some((m) => m.id === selectedModel))
@@ -2451,7 +2462,6 @@ export const useSettingsStore = create<SettingsState>()(
         const { ollamaModels, openaiModels, openaiCustomModelIds, openrouterCustomModelIds } = get()
         const activeProviders = get()
           .getActiveProviders()
-          .filter((provider) => !(provider === 'openai' && get().providers.openai.authMode === 'oauth'))
         
         let models = DEFAULT_MODELS.filter((m) => activeProviders.includes(m.provider))
         if (activeProviders.includes('openai') && openaiModels.length > 0) {
