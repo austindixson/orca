@@ -80,6 +80,7 @@ import {
   ORCHESTRATOR_DEFAULT_MAX_ITERATIONS,
   ORCHESTRATOR_HARD_MAX_ITERATIONS,
   ORCHESTRATOR_SIMPLE_MAX_ITERATIONS,
+  ORCHESTRATOR_TRIVIAL_MAX_ITERATIONS,
 } from '../lib/orchestrator/orchestratorConstants'
 import { persistOrchestratorPlanMarkdown } from '../lib/orchestrator/orchestratorPersistPlan'
 import { nanoid } from 'nanoid'
@@ -1236,9 +1237,11 @@ export const useOrchestratorSessionStore = create<OrchestratorSessionState>((set
       }
 
       if (!hermesDirectConversationMode) {
-        appendLog(
-          `[Prompt] ${promptTier === 'simple' ? 'Simple — direct tools (no decomposition).' : 'Complex — phased planning/delegation will be prepared.'}`
-        )
+        const tierLabel =
+          promptTier === 'trivial' ? 'Trivial — direct reply (no tools).' :
+          promptTier === 'simple' ? 'Simple — direct tools (no decomposition).' :
+          'Complex — phased planning/delegation will be prepared.'
+        appendLog(`[Prompt] ${tierLabel}`)
       }
 
       const interpretedPrefix =
@@ -1250,6 +1253,7 @@ export const useOrchestratorSessionStore = create<OrchestratorSessionState>((set
         ? `${interpretedPrefix}${finalPrompt}`
         : finalPrompt
       let maxIterationsForRun =
+        promptTier === 'trivial' ? ORCHESTRATOR_TRIVIAL_MAX_ITERATIONS :
         promptTier === 'simple' ? ORCHESTRATOR_SIMPLE_MAX_ITERATIONS : ORCHESTRATOR_DEFAULT_MAX_ITERATIONS
 
       const visionComplex = promptTier === 'complex' && wantsImages
@@ -1414,6 +1418,11 @@ export const useOrchestratorSessionStore = create<OrchestratorSessionState>((set
               projectInstructions,
               installedSkillsCatalog,
               maxIterations: maxIterationsForRun,
+              ...(promptTier === 'trivial' ? {
+                toolAllowlist: [],
+                overrideSystemPrompt:
+                  'You are an AI assistant. Respond directly and concisely to the user. Do not use any tools — just reply naturally.',
+              } : {}),
               visionWithoutDecomposition: visionComplexNoDecomp,
               /**
                * Only force the extra acknowledgment turn when we expect visible planning/tool work.

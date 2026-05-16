@@ -1,13 +1,23 @@
 import { heuristicResearchIntent } from './researchIntent'
 
-export type OrchestratorPromptTier = 'simple' | 'complex'
+export type OrchestratorPromptTier = 'trivial' | 'simple' | 'complex'
+
+const GREETINGS = /^(hi|hey|hello|yo|sup|heya|hola|howdy|good (morning|afternoon|evening)|greetings|what's up|whats up)[\s!.,]*$/i
+const THANKS = /^(thanks|thank you|ty|thx|tyvm|thank|cheers|much obliged|appreciate it)[\s!.,]*$/i
+const ACKS = /^(ok|okay|k|kk|got it|gotcha|understood|noted|sure|alright|fine|cool|sounds good|makes sense|will do|on it|roger|ack)[\s!.,]*$/i
 
 /**
- * Fast heuristic (no extra LLM): **simple** → one orchestrator pass, tighter iteration cap.
+ * Fast heuristic (no extra LLM).
+ * **trivial** → no tools, no planning, minimal system prompt, max 2 turns.
+ * **simple** → one orchestrator pass, tighter iteration cap, lightweight system prompt.
  * **complex** → optional decomposition + guidance to parallelize `spawn_sub_agent` for repo/project work.
  */
 export function classifyOrchestratorPrompt(prompt: string): OrchestratorPromptTier {
   const t = prompt.trim()
+  if (!t) return 'trivial'
+
+  if (t.length < 30 && (GREETINGS.test(t) || THANKS.test(t) || ACKS.test(t))) return 'trivial'
+
   if (t.length < 6) return 'simple'
   // Explicit operator command: open Hermes agent in Orca canvas first.
   if (

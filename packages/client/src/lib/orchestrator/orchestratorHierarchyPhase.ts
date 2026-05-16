@@ -71,7 +71,7 @@ function parseHierarchyJson(raw: string): OrchestratorHierarchyResult {
 }
 
 export function shouldUseHierarchicalPlanning(input: {
-  promptTier: 'simple' | 'complex'
+  promptTier: 'trivial' | 'simple' | 'complex'
   prompt: string
   wantsImages: boolean
   skillActivated: boolean

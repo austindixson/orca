@@ -2,9 +2,8 @@
  * Agent harness tool-loop caps (`max_iterations`). `runOrchestrator` clamps to `ORCHESTRATOR_HARD_MAX_ITERATIONS`.
  */
 export const ORCHESTRATOR_DEFAULT_MAX_ITERATIONS = 150
-/** Cap for **simple** prompts (triage). */
-export const ORCHESTRATOR_SIMPLE_MAX_ITERATIONS = 150
-/** Absolute ceiling for vision+complex and any caller-provided maxIterations. */
+export const ORCHESTRATOR_SIMPLE_MAX_ITERATIONS = 5
+export const ORCHESTRATOR_TRIVIAL_MAX_ITERATIONS = 2
 export const ORCHESTRATOR_HARD_MAX_ITERATIONS = 150
 
 /** When true, all tool_calls in a single assistant message run concurrently (Promise.all). */

@@ -25,7 +25,10 @@ export const LEAD_ORCHESTRATOR_TOOL_ALLOWLIST: readonly string[] = [
 export function filterOrchestratorToolsByAllowlist(
   allowlist: string[] | null | undefined
 ): typeof ORCHESTRATOR_TOOLS_OPENAI {
-  if (!allowlist || allowlist.length === 0) return ORCHESTRATOR_TOOLS_OPENAI
+  // null/undefined = no restriction (all tools)
+  if (allowlist == null) return ORCHESTRATOR_TOOLS_OPENAI
+  // empty array = no tools allowed (e.g. trivial runs)
+  if (allowlist.length === 0) return []
   const set = new Set(allowlist)
   return ORCHESTRATOR_TOOLS_OPENAI.filter((t) => set.has(t.function.name))
 }
