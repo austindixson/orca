@@ -51,3 +51,4 @@ chat/
 .orca/
 .agent-canvas/
 pwgen/
+.cursor/

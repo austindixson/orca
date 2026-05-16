@@ -63,11 +63,6 @@ import {
   suppressBracketReasoningBlocks,
   type ParsedSegment,
 } from '../../lib/orchestrator/activityLineParsing'
-import {
-  extractDelegatedTraceChip,
-  type DelegatedTraceChip,
-} from '../../lib/orchestrator/delegatedLogPresentation'
-import { chipClass } from '../tiles/agent-tile/styles'
 import { OneShotClarifyModal } from '../OneShot/OneShotClarifyModal'
 import { OrchestratorQueuePanel } from './OrchestratorQueuePanel'
 import { OrchestratorResumeCard } from './OrchestratorResumeCard'
@@ -142,8 +137,8 @@ function isWriteFileStartLine(line: string): boolean {
 }
 
 const tracePeekMaskStyle: CSSProperties = {
-  WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 45%, black 100%)',
-  maskImage: 'linear-gradient(to bottom, transparent 0%, black 45%, black 100%)',
+  WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, transparent 20%, black 70%, black 100%)',
+  maskImage: 'linear-gradient(to bottom, transparent 0%, transparent 20%, black 70%, black 100%)',
 }
 
 function StreamingCodeBlock({
@@ -515,15 +510,6 @@ export function OrchestratorModuleLayout({ variant = 'sidebar' }: OrchestratorMo
       window.clearInterval(elapsedId)
     }
   }, [runStartedAtMs])
-
-  const runLastToolChip = useMemo<DelegatedTraceChip | null>(() => {
-    const tail = activity.slice(-40)
-    for (let i = tail.length - 1; i >= 0; i--) {
-      const chip = extractDelegatedTraceChip(tail[i] ?? '', i)
-      if (chip && chip.kind !== 'info') return chip
-    }
-    return null
-  }, [activity])
 
   const selectedModelConfig = useMemo(
     () => availableModels.find((m) => m.id === selectedModelId) ?? null,
@@ -1179,15 +1165,13 @@ export function OrchestratorModuleLayout({ variant = 'sidebar' }: OrchestratorMo
               ) : null}
               <OrchestratorResumeCard />
               {(traceLines.length > 0 || running) && (
-                <div
-                  className="shrink-0"
-                  data-tooltip="Latest trace lines (expand Trace below for the full log)"
-                >
+                <div className="shrink-0">
                   <OrchestratorTracePeekRows
                     tracePeekRows={tracePeekRows}
                     running={running}
                     traceLineCount={traceLines.length}
                     maskStyle={tracePeekMaskStyle}
+                    traceLines={traceLinesForPeek}
                   />
                 </div>
               )}
@@ -1227,42 +1211,6 @@ export function OrchestratorModuleLayout({ variant = 'sidebar' }: OrchestratorMo
               </button>
             </div>
           </div>
-        )}
-
-        {traceLines.length > 0 && (
-          <details className="group rounded-lg border border-tile-border/50 bg-canvas-bg/60 font-mono text-[10px] text-gray-500">
-            <summary className="cursor-pointer list-none px-2 py-1.5 text-[10px] text-gray-400 transition-colors marker:content-none hover:text-gray-200 [&::-webkit-details-marker]:hidden">
-              <span className="inline-flex min-w-0 items-center gap-1.5">
-                <span className="rounded border border-tile-border/60 bg-black/30 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-gray-500">
-                  Trace
-                </span>
-                <span>{traceLines.length} lines</span>
-                <span className="text-gray-600">· planning, tools, model</span>
-                {runLastToolChip && runLastToolChip.kind !== 'info' ? (
-                  <span
-                    className={
-                      runLastToolChip.kind === 'call'
-                        ? chipClass('cyan') + ' max-w-[210px] truncate py-0'
-                        : chipClass('emerald') + ' max-w-[210px] truncate py-0'
-                    }
-                    data-tooltip={runLastToolChip.name}
-                  >
-                    <span className="shrink-0 opacity-70">{runLastToolChip.kind === 'call' ? '→' : '←'}</span>
-                    <span className="truncate">{runLastToolChip.name}</span>
-                  </span>
-                ) : null}
-                <span className="ml-auto text-[9px] text-gray-600 group-open:hidden">▸</span>
-                <span className="ml-auto hidden text-[9px] text-gray-600 group-open:inline">▾</span>
-              </span>
-            </summary>
-            <div className="max-h-36 space-y-0.5 overflow-y-auto border-t border-tile-border/40 px-2 py-1.5 leading-tight">
-              {traceLines.map((line, idx) => (
-                <div key={`t-${idx}-${line.slice(0, 24)}`} className={`whitespace-pre-wrap break-all ${lineClass(line)}`}>
-                  {line}
-                </div>
-              ))}
-            </div>
-          </details>
         )}
 
         {diffTrackerFiles.length > 0 && (
