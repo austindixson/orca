@@ -1196,7 +1196,10 @@ export const useOrchestratorSessionStore = create<OrchestratorSessionState>((set
         appendLog(`[Articulation] ${preview}`)
       }
 
-      if (!isHeartbeatRun && !hermesDirectConversationMode && articulationMode === 'always') {
+      const preClassifyPrompt = finalPrompt
+      const preClassifyTier = classifyOrchestratorPrompt(preClassifyPrompt)
+
+      if (!isHeartbeatRun && !hermesDirectConversationMode && preClassifyTier !== 'trivial' && articulationMode === 'always') {
         try {
           await runArticulationPhase()
         } catch (e) {
@@ -1222,6 +1225,7 @@ export const useOrchestratorSessionStore = create<OrchestratorSessionState>((set
       if (
         !isHeartbeatRun &&
         !hermesDirectConversationMode &&
+        promptTier !== 'trivial' &&
         articulationMode === 'before_planning' &&
         shouldArticulateOrchestratorPrompt(finalPrompt) &&
         !didArticulation
@@ -1418,6 +1422,7 @@ export const useOrchestratorSessionStore = create<OrchestratorSessionState>((set
               projectInstructions,
               installedSkillsCatalog,
               maxIterations: maxIterationsForRun,
+              promptTier,
               ...(promptTier === 'trivial' ? {
                 toolAllowlist: [],
                 overrideSystemPrompt:

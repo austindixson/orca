@@ -66,6 +66,7 @@ import {
 import { OneShotClarifyModal } from '../OneShot/OneShotClarifyModal'
 import { OrchestratorQueuePanel } from './OrchestratorQueuePanel'
 import { OrchestratorResumeCard } from './OrchestratorResumeCard'
+import { OrchestratorRunSummary } from './OrchestratorRunSummary'
 import { OneShotWorkspacePickerModal } from '../OneShot/OneShotWorkspacePickerModal'
 import { OneShotTempProjectsManager } from '../OneShot/OneShotTempProjectsManager'
 import { ensureOrchestratorWidgetTile } from '../../lib/orchestrator/ensureOrchestratorWidgetTile'
@@ -1163,6 +1164,7 @@ export function OrchestratorModuleLayout({ variant = 'sidebar' }: OrchestratorMo
               {planningDraft ? (
                 <OrchestratorPlanningDraftPanel planningDraft={planningDraft} />
               ) : null}
+              <OrchestratorRunSummary />
               <OrchestratorResumeCard />
               {(traceLines.length > 0 || running) && (
                 <div className="shrink-0">

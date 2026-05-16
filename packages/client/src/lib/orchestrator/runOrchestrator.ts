@@ -591,28 +591,23 @@ async function buildSystemPrompt(
   modelDisplayLabel?: string,
   opts?: {
     researchMode?: boolean
-    /** When true, first model turn has no tools (acknowledgment before tools). */
     textOnlyFirstTurn?: boolean
-    /** Merged `~/.claude/orca.md` (or `CLAUDE.md`) + workspace `orca.md` / legacy `CLAUDE.md` (see `loadProjectInstructionsForPrompt`). */
     projectInstructions?: string | null
-    /** From `loadInstalledSkillsCatalogForOrchestrator` — lists `/skills` and slash commands so agents pick relevant SKILL.md via `read_file`. */
     installedSkillsCatalog?: string | null
-    /** Complex prompt + image: decomposition was skipped — warn against burning rounds on exploratory list_directory. */
     visionWithoutDecomposition?: boolean
-    /** Main orchestrator: coordination + spawn_sub_agent only (no file tools). */
     leadDelegationOnly?: boolean
-    /** Proactive heartbeat vs normal user turn — shapes dynamic prompt preface. */
     orchestratorRunContext?: OrchestratorRunContext
-    /** Preferred workspace root for this run (from UI/store) so Hermes lead stays aligned with the active Orca directory. */
     workspaceRoot?: string | null
+    promptTier?: 'trivial' | 'simple' | 'complex'
   }
 ): Promise<string> {
-  const longTermMemoryBlock = await loadLongTermMemoryForSystemPrompt()
-  const userProfileBlock = await loadUserProfileForSystemPrompt()
-  const recurringIssueBlock = await buildRecurringIssueBlock()
-  const activeCandidateBlock = await buildActiveHarnessCandidatePromptBlock()
-  const autoCompactionBlock = getAutoCompactionSystemPromptBlock()
-  const dynamicPreface = buildDynamicPromptPreface(opts?.orchestratorRunContext)
+  const isLightweight = opts?.promptTier === 'simple' || opts?.promptTier === 'trivial'
+  const longTermMemoryBlock = isLightweight ? '' : await loadLongTermMemoryForSystemPrompt()
+  const userProfileBlock = isLightweight ? '' : await loadUserProfileForSystemPrompt()
+  const recurringIssueBlock = isLightweight ? '' : await buildRecurringIssueBlock()
+  const activeCandidateBlock = isLightweight ? '' : await buildActiveHarnessCandidatePromptBlock()
+  const autoCompactionBlock = isLightweight ? '' : getAutoCompactionSystemPromptBlock()
+  const dynamicPreface = isLightweight ? '' : buildDynamicPromptPreface(opts?.orchestratorRunContext)
   const ws = await tauri.getWorkspace()
   const hermesAgentTileEnabled = useSettingsStore.getState().showHermesAgentTile
   const workspaceRootFromStoreRaw = useWorkspaceStore.getState().rootPath
@@ -641,12 +636,14 @@ ${opts.projectInstructions.trim()}
 `
       : ''
   const skillsCatalogBlock =
-    opts?.installedSkillsCatalog?.trim()
-      ? `
+    isLightweight
+      ? ''
+      : opts?.installedSkillsCatalog?.trim()
+        ? `
 
 ${opts.installedSkillsCatalog.trim()}
 `
-      : ''
+        : ''
 
   if (opts?.leadDelegationOnly === true) {
     return buildLeadDelegationSystemPrompt(
@@ -694,7 +691,7 @@ This run skipped the planning pass that splits work into parallel tracks (images
 `
       : ''
 
-  const vaultWikiBlock = await (async () => {
+  const vaultWikiBlock = isLightweight ? '' : await (async () => {
     const wikiPaths = ['wiki/index.md', 'wiki/state.md', 'Orca/brain/README.md'] as const
     let found: string | null = null
     for (const p of wikiPaths) {
@@ -940,6 +937,11 @@ export interface RunOrchestratorOptions extends OrchestratorModelContext {
    */
   overrideSystemPrompt?: string | null
   /**
+   * When 'trivial' or 'simple', buildSystemPrompt uses a lightweight prompt without
+   * skills catalog, memory blocks, vault wiki, or long behavioral contracts.
+   */
+  promptTier?: 'trivial' | 'simple' | 'complex'
+  /**
    * Fired with the **first** assistant message when \`textOnlyFirstTurn\` is true (intro before tools).
    * The returned \`assistantText\` is still the **closing** summary after tools finish.
    */
@@ -1126,6 +1128,7 @@ export async function runOrchestratorAgent(
       leadDelegationOnly: leadDelegationOnly === true && !subAgentTileId,
       orchestratorRunContext,
       workspaceRoot,
+      promptTier: options.promptTier,
     }))
   let systemFinal = system
   if (executionContractIsMeaningful(executionContract)) {
